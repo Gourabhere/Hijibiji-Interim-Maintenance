@@ -1,15 +1,12 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@^2.48.1';
 
-// Project credentials provided by the user
-const SUPABASE_URL = 'https://xmrkiyaiqdspwhbfwiae.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhtcmtpeWFpcWRzcHdoYmZ3aWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MzcwMjQsImV4cCI6MjA4NTQxMzAyNH0.TO79AckV909Kga32xvSV5OPRST8x19UKx9MFOXaKbYQ';
+// Updated Project: bhdrlzaqejkrqsozbcbr
+const SUPABASE_URL = 'https://bhdrlzaqejkrqsozbcbr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJoZHJsemFxZWprcnFzb3piY2JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4NzM4OTAsImV4cCI6MjA4NTQ0OTg5MH0.W1kWS99fv-QjQI_eVE3XvPhMWbgMQoGqOtaUHcVlP9s';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-/**
- * Fetches all necessary portal data from Supabase and maps it to the frontend types.
- */
 export const fetchAllData = async () => {
   try {
     const { data: ownersRaw, error: ownersError } = await supabase
@@ -26,11 +23,10 @@ export const fetchAllData = async () => {
       .select('*');
 
     if (ownersError || p25Error || p26Error) {
-      console.error('Supabase fetch error details:', { ownersError, p25Error, p26Error });
+      console.error('Supabase fetch error:', { ownersError, p25Error, p26Error });
       return null;
     }
 
-    // Transform database records (snake_case) to application types (camelCase)
     const owners = (ownersRaw || []).map(o => ({
       sn: o.sn,
       flatNo: o.flat_no || o.flatNo,
@@ -63,7 +59,7 @@ export const fetchAllData = async () => {
 
     return { owners, p25, p26 };
   } catch (err) {
-    console.error('Supabase connection failed unexpectedly:', err);
+    console.error('Supabase operation failed:', err);
     return null;
   }
 };

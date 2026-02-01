@@ -105,6 +105,42 @@ const AdminDashboard: React.FC<Props> = ({
     finally { setIsGeneratingAi(false); }
   };
 
+  const getFilteredOwners = () => {
+    if (!searchTerm.trim()) return owners;
+    
+    const term = searchTerm.toLowerCase().trim();
+    // Normalize string to remove spaces and special chars for fuzzy matching
+    const normalize = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const termNorm = normalize(term);
+    
+    return owners.filter(o => {
+      const flat = o.flatNo.toLowerCase();
+      const name = o.name.toLowerCase();
+      const possession = o.possessionDate ? o.possessionDate.toLowerCase() : '';
+      
+      // 1. Direct Inclusion (Fastest)
+      if (flat.includes(term) || name.includes(term) || possession.includes(term)) return true;
+      
+      // 2. Normalized Inclusion (Handles "1 B 3" matching "1B3")
+      const flatNorm = normalize(o.flatNo);
+      const nameNorm = normalize(o.name);
+      if (flatNorm.includes(termNorm) || nameNorm.includes(termNorm)) return true;
+      
+      // 3. Token Based Matching (Handles "Suman A" matching "Sumanta Adhikary")
+      const tokens = term.split(/\s+/).filter(t => t.length > 0);
+      if (tokens.length > 0) {
+        const targetText = `${flat} ${name} ${possession}`;
+        // All tokens must be present in the target text
+        const allTokensMatch = tokens.every(token => targetText.includes(token));
+        if (allTokensMatch) return true;
+      }
+
+      return false;
+    });
+  };
+
+  const filteredOwners = getFilteredOwners();
+
   return (
     <div className="min-h-screen p-4 md:p-8 max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
       <aside className="w-full lg:w-80 space-y-6">
@@ -276,8 +312,8 @@ const AdminDashboard: React.FC<Props> = ({
                     type="text" 
                     value={searchTerm} 
                     onChange={e => setSearchTerm(e.target.value)} 
-                    placeholder="Find flat..." 
-                    className="w-full bg-white/5 border border-white/10 text-xs font-bold rounded-xl pl-12 py-3 outline-none"
+                    placeholder="Search name, flat, or date..." 
+                    className="w-full bg-white/5 border border-white/10 text-xs font-bold rounded-xl pl-12 py-3 outline-none focus:ring-2 ring-indigo-500/30 transition-all"
                    />
                 </div>
              </div>
@@ -291,7 +327,7 @@ const AdminDashboard: React.FC<Props> = ({
                    </tr>
                  </thead>
                  <tbody className="divide-y divide-white/5">
-                   {owners.filter(o => o.flatNo.includes(searchTerm)).map(o => (
+                   {filteredOwners.map(o => (
                      <tr key={o.flatNo} className="hover:bg-white/[0.03] transition-colors group">
                        <td className="px-10 py-6 font-black text-indigo-400 text-base">{o.flatNo}</td>
                        <td className="px-10 py-6 font-bold text-white/80">{o.name}</td>
@@ -302,6 +338,13 @@ const AdminDashboard: React.FC<Props> = ({
                        </td>
                      </tr>
                    ))}
+                   {filteredOwners.length === 0 && (
+                     <tr>
+                       <td colSpan={3} className="px-10 py-8 text-center text-white/30 text-sm font-medium">
+                         No matching records found.
+                       </td>
+                     </tr>
+                   )}
                  </tbody>
                </table>
              </div>

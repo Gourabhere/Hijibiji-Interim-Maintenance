@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Building2, Shield, User, Info, ArrowRight, X } from 'lucide-react';
+import { Search, Building2, Shield, User, Info, ArrowRight, X, RefreshCw, Sun, Moon } from 'lucide-react';
 import { 
   owners as initialOwners, 
   payments2025 as initialP25, 
@@ -8,6 +8,7 @@ import {
 } from './data';
 import { Owner, DashboardData, Payment2025, Payment2026 } from './types';
 import { MONTHLY_EXPENSES_2025, Q1_DUE_AMOUNT } from './constants';
+import { fetchAllData } from './lib/supabase';
 import OwnerDashboard from './components/OwnerDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import Login from './components/Login';
@@ -18,12 +19,60 @@ const App: React.FC = () => {
   const [searchResults, setSearchResults] = useState<Owner[]>([]);
   const [selectedOwnerData, setSelectedOwnerData] = useState<DashboardData | null>(null);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const searchRef = useRef<HTMLDivElement>(null);
 
   // App Data State
   const [owners, setOwners] = useState<Owner[]>(initialOwners);
   const [p25List, setP25List] = useState<Payment2025[]>(initialP25);
   const [p26List, setP26List] = useState<Payment2026[]>(initialP26);
+
+  // Theme Sync
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null;
+    const systemPrefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+    
+    const initialTheme = savedTheme || (systemPrefersLight ? 'light' : 'dark');
+    setTheme(initialTheme);
+    
+    if (initialTheme === 'light') {
+      document.body.classList.add('light');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    if (newTheme === 'light') {
+      document.body.classList.add('light');
+    } else {
+      document.body.classList.remove('light');
+    }
+  };
+
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        const cloudData = await fetchAllData();
+        if (cloudData && cloudData.owners?.length > 0) {
+          setOwners(cloudData.owners);
+          setP25List(cloudData.p25 || []);
+          setP26List(cloudData.p26 || []);
+          console.log('Successfully loaded data from Supabase');
+        } else {
+          console.log('Supabase empty or unconfigured, using local data');
+        }
+      } catch (err) {
+        console.error('Failed to load from cloud:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, []);
 
   useEffect(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -52,9 +101,6 @@ const App: React.FC = () => {
 
   const calculateSharedExp2025 = (owner: Owner, carryForward: number) => {
     if (carryForward === 0) return 0;
-    // Shared expenses for 2025 based on possession date
-    // Total Aug-Dec expense per full-resident flat is 3272
-    // For Nov-Dec possession, it is 1609 (815 + 794)
     if (owner.possessionDate === 'Nov-25') return 1609;
     return 3272;
   };
@@ -71,7 +117,6 @@ const App: React.FC = () => {
     const q1Payment = p26.q1Payment;
     const totalAvailable = carryForward + q1Payment;
     
-    // Derived Financials
     const sharedExp2025 = calculateSharedExp2025(owner, carryForward);
     const totalPaid2025 = carryForward + sharedExp2025;
     const lifetimePaid = totalPaid2025 + q1Payment;
@@ -104,10 +149,28 @@ const App: React.FC = () => {
     setView('owner');
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center text-white space-y-4">
+        <RefreshCw className="animate-spin text-indigo-400" size={48} />
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Connecting to Hive...</p>
+      </div>
+    );
+  }
+
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen transition-all duration-500">
+      {/* Universal Theme Toggle */}
+      <button 
+        onClick={toggleTheme}
+        className="fixed top-6 right-6 z-[60] p-3 glass rounded-2xl hover:bg-white/10 transition-all neo-button"
+        title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+      >
+        {theme === 'dark' ? <Sun size={20} className="text-amber-400" /> : <Moon size={20} className="text-indigo-600" />}
+      </button>
+
       {view === 'landing' && (
-        <div className="min-h-screen flex flex-col items-center justify-center p-6 text-white text-center">
+        <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
           <div className="mb-8 animate-in zoom-in duration-700">
             <div className="w-20 h-20 glass rounded-[2rem] flex items-center justify-center mx-auto shadow-2xl border-white/20">
               <Building2 size={40} className="text-indigo-400" />

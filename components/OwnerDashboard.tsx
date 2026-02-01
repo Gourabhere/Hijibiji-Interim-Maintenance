@@ -18,15 +18,12 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
   const { owner, p2025, p2026, calculated } = data;
 
   const getMonthValue2025 = (month: string) => {
-    // Determine participation: either they have a carry-forward or they paid more than the Q1 2026 due
     const participatedIn2025 = p2026.carryForward2025 > 0 || (p2026.paidTillDate > p2026.q1Payment);
     if (!participatedIn2025) return 0;
 
-    // Society shared pool only covers Aug-Dec 2025
     const poolMonths = ['Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     if (!poolMonths.includes(month)) return 0;
 
-    // If possession is TBD but they participated, assume they are covered for the full pool period
     if (owner.possessionDate === 'TBD') return 2000;
 
     const parts = owner.possessionDate.split('-');
@@ -35,7 +32,6 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
     const posMonthStr = parts[0];
     const posYearStr = parts[1];
 
-    // If possession year is not 2025, they don't have 2025 shared expense obligations
     if (posYearStr !== '25') return 0;
 
     const allMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -43,10 +39,8 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
     const currIndex = allMonths.indexOf(month);
     const poolStartIndex = allMonths.indexOf('Aug');
 
-    // Effective start is whichever is later: the possession month or the society pool start (Aug)
     const effectiveStart = Math.max(posIndex, poolStartIndex);
     
-    // If current month is at or after the effective start, it's covered
     if (currIndex >= effectiveStart) return 2000;
     
     return 0;
@@ -94,12 +88,11 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
     return <AlertCircle size={120} />;
   };
 
-  const totalFunds = p2026.carryForward2025 + p2026.q1Payment;
   const isSurplus = calculated.currentBalance > 0;
   const isDebt = calculated.currentBalance < 0;
 
   return (
-    <div className="min-h-screen p-4 pb-28 max-w-2xl mx-auto space-y-6 text-white">
+    <div className="min-h-screen p-4 pb-28 max-w-2xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <button onClick={onBack} className="p-3 glass rounded-2xl hover:bg-white/10 transition-all neo-button">
@@ -141,16 +134,15 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
 
       {/* Financial Breakdown */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="glass rounded-[2rem] p-5 border-white/10">
-          <div className="text-[9px] opacity-40 mb-1 uppercase font-black tracking-widest">2025 carry forward</div>
+        <div className="glass rounded-[2rem] p-5">
+          <div className="text-[9px] text-white/40 mb-1 uppercase font-black tracking-widest">2025 carry forward</div>
           <div className="text-xl font-black text-indigo-400">{formatCurrency(p2026.carryForward2025)}</div>
           <div className="text-[8px] mt-2 text-white/20 font-bold uppercase tracking-wider">Balance from 2025</div>
         </div>
         
-        {/* Dynamic Balance Display */}
-        <div className={`glass rounded-[2rem] p-5 border-white/10 transition-colors duration-500 ${isDebt ? 'bg-rose-500/5' : 'bg-emerald-500/5'}`}>
-          <div className="text-[9px] opacity-40 mb-1 uppercase font-black tracking-widest flex items-center gap-1">
-             {isSurplus ? 'Surplus Credit (Available)' : isDebt ? 'Amount Outstanding' : 'Balance Settled'}
+        <div className={`glass rounded-[2rem] p-5 transition-colors duration-500 ${isDebt ? 'bg-rose-500/5' : 'bg-emerald-500/5'}`}>
+          <div className="text-[9px] text-white/40 mb-1 uppercase font-black tracking-widest flex items-center gap-1">
+             {isSurplus ? 'Surplus Credit' : isDebt ? 'Amount Outstanding' : 'Balance Settled'}
              {isSurplus ? <TrendingUp size={10} /> : isDebt ? <TrendingDown size={10} /> : null}
           </div>
           <div className={`text-xl font-black ${isDebt ? 'text-rose-400' : 'text-cyan-400'}`}>
@@ -163,7 +155,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
       </div>
 
       {/* Facility Status */}
-      <div className="glass rounded-[2rem] p-6 border-white/10">
+      <div className="glass rounded-[2rem] p-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-cyan-500/20 rounded-xl text-cyan-400"><Activity size={18} /></div>
           <h3 className="font-black text-xs uppercase tracking-widest text-white/50">Society Pulse</h3>
@@ -184,7 +176,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
       </div>
 
       {/* Payment History Grid */}
-      <div className="glass rounded-[2.5rem] p-6 border-white/10 shadow-2xl">
+      <div className="glass rounded-[2.5rem] p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-black text-[10px] uppercase tracking-[0.2em] text-white/30">Monthly Ledger</h2>
           <div className="flex bg-black/40 p-1 rounded-xl border border-white/10">
@@ -192,7 +184,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
               <button 
                 key={y}
                 onClick={() => setSelectedYear(y as any)}
-                className={`px-5 py-2 rounded-lg text-[10px] font-black transition-all ${selectedYear === y ? 'bg-indigo-600 text-white shadow-xl scale-105' : 'opacity-40 hover:opacity-100'}`}
+                className={`px-5 py-2 rounded-lg text-[10px] font-black transition-all ${selectedYear === y ? 'bg-indigo-600 text-white shadow-xl scale-105' : 'text-white/40 hover:text-white'}`}
               >
                 {y}
               </button>
@@ -209,7 +201,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
               }`}>
                 {m.amount >= 2000 ? <CheckCircle2 size={16} className="text-emerald-400" /> : m.amount > 0 ? <Clock size={16} className="text-amber-300" /> : null}
               </div>
-              <span className="text-[8px] font-black opacity-30 uppercase tracking-tighter">{m.label}</span>
+              <span className="text-[8px] font-black text-white/30 uppercase tracking-tighter">{m.label}</span>
             </div>
           ))}
         </div>

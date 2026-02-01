@@ -5,7 +5,7 @@ import {
   Search, FileText, LayoutDashboard, Database,
   Shield, RefreshCw, Sparkles, Link as LinkIcon, 
   ArrowUpRight, Clock, CheckCircle, AlertCircle,
-  Info, CloudUpload
+  Info
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
@@ -13,7 +13,6 @@ import {
 import { GoogleGenAI, Type } from "@google/genai";
 import { Owner, Payment2025, Payment2026 } from '../types';
 import { formatCurrency } from '../utils';
-import { upsertOwners, upsertPayments2025, upsertPayments2026 } from '../lib/supabase';
 import BalanceSheet from './BalanceSheet';
 
 interface Props {
@@ -32,7 +31,6 @@ const AdminDashboard: React.FC<Props> = ({
   const [activeTab, setActiveTab] = useState<'overview' | 'owners' | 'sync' | 'ai'>('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
-  const [isPersisting, setIsPersisting] = useState(false);
   const [syncSuccess, setSyncSuccess] = useState(false);
   const [aiInsight, setAiInsight] = useState('');
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
@@ -42,7 +40,7 @@ const AdminDashboard: React.FC<Props> = ({
   const totalOutstanding25 = p25.reduce((acc, curr) => acc + (curr.outstanding || 0), 0);
   const totalCollected26 = p26.reduce((acc, curr) => acc + curr.paidTillDate, 0);
 
-  const collectionRate = (totalCollected25 / (totalCollected25 + totalOutstanding25 || 1) * 100).toFixed(1);
+  const collectionRate = (totalCollected25 / (totalCollected25 + totalOutstanding25) * 100).toFixed(1);
 
   const handleSync = async () => {
     setIsSyncing(true);
@@ -62,40 +60,6 @@ const AdminDashboard: React.FC<Props> = ({
       alert("Error syncing data. Please ensure the Google Sheet is published to web.");
     } finally {
       setIsSyncing(false);
-    }
-  };
-
-  const handlePersistToCloud = async () => {
-    setIsPersisting(true);
-    try {
-      // Logic for persisting current local state to Supabase
-      const mappedOwners = owners.map(o => ({
-        flat_no: o.flatNo,
-        name: o.name,
-        possession_date: o.possessionDate,
-        sn: o.sn
-      }));
-
-      const mappedP26 = p26.map(p => ({
-        flat_no: p.flatNo,
-        carry_forward_2025: p.carryForward2025,
-        q1_payment: p.q1Payment,
-        jan: p.jan, feb: p.feb, mar: p.mar, apr: p.apr,
-        may: p.may, jun: p.jun, jul: p.jul, aug: p.aug,
-        sep: p.sep, oct: p.oct, nov: p.nov, dec: p.dec,
-        paid_till_date: p.paidTillDate,
-        outstanding: p.outstanding
-      }));
-
-      await upsertOwners(mappedOwners);
-      await upsertPayments2026(mappedP26);
-      
-      alert("Cloud database successfully updated!");
-    } catch (err) {
-      console.error("Persistence error:", err);
-      alert("Failed to update cloud database.");
-    } finally {
-      setIsPersisting(false);
     }
   };
 
@@ -153,6 +117,7 @@ const AdminDashboard: React.FC<Props> = ({
           </div>
         </div>
 
+        {/* Quick Stats Sidebar Widget */}
         <div className="glass rounded-[2rem] p-6 border-white/5 hidden lg:block">
            <div className="flex items-center gap-2 mb-4 text-[10px] font-black uppercase tracking-widest text-white/30">
              <Clock size={14} /> System Activity
@@ -174,6 +139,7 @@ const AdminDashboard: React.FC<Props> = ({
       <main className="flex-1 space-y-8 min-w-0">
         {activeTab === 'overview' && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* Liquidity Gauge Widget */}
             <div className="glass rounded-[3rem] p-10 border-white/10 relative overflow-hidden group">
                <div className="absolute top-0 right-0 p-8 opacity-5 transform group-hover:scale-110 transition-transform">
                   <TrendingUp size={160} />
@@ -218,6 +184,26 @@ const AdminDashboard: React.FC<Props> = ({
                  <div className="text-[11px] text-white/30 font-medium">Projection: 110% target reach expected</div>
                </div>
             </div>
+
+            {/* Collections Chart Widget */}
+            <div className="glass rounded-[3rem] p-8 h-[400px]">
+               <h3 className="text-xs font-black uppercase tracking-widest text-white/30 mb-10 px-4">Fiscal Trends (2025)</h3>
+               <ResponsiveContainer width="100%" height="80%">
+                  <BarChart data={[
+                    { name: 'Aug', value: 134732 },
+                    { name: 'Sep', value: 175265 },
+                    { name: 'Oct', value: 166961 },
+                    { name: 'Nov', value: 191075 },
+                    { name: 'Dec', value: 193233 },
+                  ]}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff08" />
+                    <XAxis dataKey="name" stroke="#ffffff30" fontSize={11} axisLine={false} tickLine={false} />
+                    <YAxis stroke="#ffffff30" fontSize={11} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ backgroundColor: '#1e1b4b', border: 'none', borderRadius: '16px' }} />
+                    <Bar dataKey="value" fill="#6366f1" radius={[8, 8, 0, 0]} barSize={40} />
+                  </BarChart>
+               </ResponsiveContainer>
+            </div>
           </div>
         )}
 
@@ -229,7 +215,7 @@ const AdminDashboard: React.FC<Props> = ({
               </div>
               <div>
                 <h2 className="text-2xl font-bold">Sync Hub</h2>
-                <p className="text-white/40 text-sm">Update application data from Google Sheets & Supabase</p>
+                <p className="text-white/40 text-sm">Update application data from Google Sheets</p>
               </div>
             </div>
 
@@ -255,21 +241,6 @@ const AdminDashboard: React.FC<Props> = ({
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-white/5 space-y-4">
-                 <div className="text-[10px] font-black uppercase tracking-widest text-white/30 flex items-center gap-2">
-                   <CloudUpload size={14} /> Cloud Persistence
-                 </div>
-                 <button 
-                  onClick={handlePersistToCloud}
-                  disabled={isPersisting}
-                  className="w-full h-14 bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-emerald-600/30 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
-                 >
-                   {isPersisting ? <RefreshCw className="animate-spin" size={16} /> : <CloudUpload size={16} />}
-                   {isPersisting ? 'Committing Changes...' : 'Persist to Supabase Cloud'}
-                 </button>
-                 <p className="text-[10px] text-white/20 italic text-center">Caution: This will overwrite existing records in the Supabase database with current application state.</p>
-              </div>
-
               {syncSuccess && (
                 <div className="p-6 bg-emerald-500/10 border border-emerald-500/30 rounded-[2rem] flex items-center gap-4 text-emerald-300 animate-in fade-in zoom-in-95 duration-300">
                   <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white shrink-0">
@@ -277,7 +248,7 @@ const AdminDashboard: React.FC<Props> = ({
                   </div>
                   <div>
                     <div className="font-bold text-sm">Sync Successful</div>
-                    <div className="text-[11px] opacity-70">Application records refreshed. Remember to persist to cloud for long-term storage.</div>
+                    <div className="text-[11px] opacity-70">Application records have been refreshed with the latest sheet data.</div>
                   </div>
                 </div>
               )}
@@ -290,7 +261,6 @@ const AdminDashboard: React.FC<Props> = ({
                   <li>Ensure the sheet is "Published to web" (File &gt; Share &gt; Publish to web).</li>
                   <li>Use the "Web Page" or "CSV" link generated by Google Sheets.</li>
                   <li>Data mapping follows the standard Hijibiji schema.</li>
-                  <li>Click "Persist to Supabase" to make changes permanent.</li>
                 </ul>
               </div>
             </div>
@@ -375,4 +345,24 @@ const AdminDashboard: React.FC<Props> = ({
       </main>
 
       {/* Bottom Nav - Mobile */}
-      <nav className="lg:hidden fixed bottom-6 left-6 right-6 h-20 glass rounded-[2rem] flex items-center justify-around px-4 z-50 shadow-2xl border
+      <nav className="lg:hidden fixed bottom-6 left-6 right-6 h-20 glass rounded-[2rem] flex items-center justify-around px-4 z-50 shadow-2xl border-white/20">
+        {[
+          { id: 'overview', icon: LayoutDashboard },
+          { id: 'owners', icon: Users },
+          { id: 'sync', icon: Database },
+          { id: 'ai', icon: Sparkles },
+        ].map(item => (
+          <button 
+            key={item.id} 
+            onClick={() => setActiveTab(item.id as any)}
+            className={`p-4 rounded-2xl transition-all ${activeTab === item.id ? 'bg-indigo-600 shadow-xl scale-110' : 'opacity-40'}`}
+          >
+            <item.icon size={22} className="text-white" />
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
+};
+
+export default AdminDashboard;

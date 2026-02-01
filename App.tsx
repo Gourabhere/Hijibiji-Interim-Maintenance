@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Building2, Shield, User, Info, ArrowRight, X, RefreshCw, Sun, Moon } from 'lucide-react';
+import { Search, Building2, Shield, User, Info, ArrowRight, X, RefreshCw, Sun, Moon, Cloud } from 'lucide-react';
 import { 
   owners as initialOwners, 
   payments2025 as initialP25, 
@@ -20,6 +20,7 @@ const App: React.FC = () => {
   const [selectedOwnerData, setSelectedOwnerData] = useState<DashboardData | null>(null);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCloudLive, setIsCloudLive] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const searchRef = useRef<HTMLDivElement>(null);
 
@@ -70,6 +71,7 @@ const App: React.FC = () => {
           setOwners(cloudData.owners);
           setP25List(cloudData.p25 || []);
           setP26List(cloudData.p26 || []);
+          setIsCloudLive(true);
           console.log('Successfully loaded data from Supabase');
         } else {
           console.log('Cloud data empty or unavailable, using built-in registry');
@@ -186,7 +188,15 @@ const App: React.FC = () => {
           </div>
           
           <h1 className="text-3xl font-black mb-2 tracking-tight">Hijibiji Portal</h1>
-          <p className="text-white/40 mb-10 max-w-sm text-xs font-black uppercase tracking-[0.2em]">Live Financial Registry</p>
+          <div className="flex items-center justify-center gap-2 mb-10">
+            <p className="text-white/40 max-w-sm text-xs font-black uppercase tracking-[0.2em]">Financial Registry</p>
+            {isCloudLive && (
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+                <Cloud size={10} className="text-emerald-500" />
+                <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Cloud Live</span>
+              </div>
+            )}
+          </div>
 
           <div className="w-full max-w-md relative mb-10" ref={searchRef}>
             <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isSearchFocused ? 'text-indigo-400' : 'text-white/30'}`}>

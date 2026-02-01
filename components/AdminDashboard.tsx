@@ -76,6 +76,10 @@ const AdminDashboard: React.FC<Props> = ({
         flat_no: p.flatNo,
         carry_forward_2025: p.carryForward2025,
         q1_payment: p.q1Payment,
+        jan: p.jan, feb: p.feb, mar: p.mar,
+        apr: p.apr, may: p.may, jun: p.jun,
+        jul: p.jul, aug: p.aug, sep: p.sep,
+        oct: p.oct, nov: p.nov, dec: p.dec,
         paid_till_date: p.paidTillDate,
         outstanding: p.outstanding
       }));
@@ -152,7 +156,7 @@ const AdminDashboard: React.FC<Props> = ({
                <div className="relative z-10">
                  <div className="flex justify-between items-end mb-6">
                     <div>
-                      <h2 className="text-4xl font-black mb-2 tracking-tighter">{collectionRate}%</h2>
+                      <h2 className="text-4xl font-black mb-2 tracking-tighter">{collectionRate} %</h2>
                       <p className="text-[11px] font-black uppercase tracking-widest text-white/30">Total Collection Rate 2025</p>
                     </div>
                     <div className="text-right">

@@ -26,7 +26,7 @@ export const fetchAllData = async () => {
       .select('*');
 
     if (ownersError || p25Error || p26Error) {
-      console.error('Supabase fetch error:', { ownersError, p25Error, p26Error });
+      console.error('Supabase fetch error details:', { ownersError, p25Error, p26Error });
       return null;
     }
 
@@ -41,7 +41,7 @@ export const fetchAllData = async () => {
     const p25 = (p25Raw || []).map(p => ({
       flatNo: p.flat_no || p.flatNo,
       aug: p.aug || 0,
-      sept: p.sept || 0,
+      sept: p.sept || p.sep || 0,
       oct: p.oct || 0,
       nov: p.nov || 0,
       dec: p.dec || 0,

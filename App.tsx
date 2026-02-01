@@ -28,39 +28,40 @@ const App: React.FC = () => {
   const [p25List, setP25List] = useState<Payment2025[]>(initialP25);
   const [p26List, setP26List] = useState<Payment2026[]>(initialP26);
 
-  // Theme Sync
+  // Theme Sync helper
+  const applyTheme = (t: 'dark' | 'light') => {
+    if (t === 'light') {
+      document.body.classList.add('light');
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.body.classList.remove('light');
+      document.documentElement.classList.add('dark');
+    }
+  };
+
+  // Initial Theme Sync
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null;
     const systemPrefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
     
     const initialTheme = savedTheme || (systemPrefersLight ? 'light' : 'dark');
     setTheme(initialTheme);
-    
-    if (initialTheme === 'light') {
-      document.body.classList.add('light');
-    } else {
-      document.body.classList.remove('light');
-    }
+    applyTheme(initialTheme);
   }, []);
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
     localStorage.setItem('theme', newTheme);
-    if (newTheme === 'light') {
-      document.body.classList.add('light');
-    } else {
-      document.body.classList.remove('light');
-    }
+    applyTheme(newTheme);
   };
 
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
       
-      // Create a promise that rejects after 3 seconds to avoid infinite loading
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Fetch timeout')), 3000)
+        setTimeout(() => reject(new Error('Fetch timeout')), 4000)
       );
 
       try {
@@ -71,12 +72,11 @@ const App: React.FC = () => {
           setP26List(cloudData.p26 || []);
           console.log('Successfully loaded data from Supabase');
         } else {
-          console.log('Cloud data unavailable, using built-in registry');
+          console.log('Cloud data empty or unavailable, using built-in registry');
         }
       } catch (err) {
-        console.warn('Cloud connection skipped or timed out. Falling back to local data.');
+        console.warn('Cloud connection issue:', err);
       } finally {
-        // Ensure we always stop loading
         setIsLoading(false);
       }
     };
@@ -178,7 +178,7 @@ const App: React.FC = () => {
       </button>
 
       {view === 'landing' && (
-        <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+        <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-700">
           <div className="mb-8 animate-in zoom-in duration-700">
             <div className="w-20 h-20 glass rounded-[2rem] flex items-center justify-center mx-auto shadow-2xl border-white/20">
               <Building2 size={40} className="text-indigo-400" />

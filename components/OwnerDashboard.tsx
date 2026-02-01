@@ -92,7 +92,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
   const isDebt = calculated.currentBalance < 0;
 
   return (
-    <div className="min-h-screen p-4 pb-28 max-w-2xl mx-auto space-y-6">
+    <div className="min-h-screen p-4 pb-28 max-w-2xl mx-auto space-y-6 animate-in fade-in duration-500">
       {/* Header */}
       <div className="flex items-center gap-4">
         <button onClick={onBack} className="p-3 glass rounded-2xl hover:bg-white/10 transition-all neo-button">
@@ -100,7 +100,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
         </button>
         <div>
           <h1 className="text-xl font-black tracking-tight">Flat {owner.flatNo}</h1>
-          <p className="text-[10px] text-cyan-400 uppercase font-black tracking-[0.2em]">{owner.name}</p>
+          <p className="text-[10px] text-cyan-500 dark:text-cyan-400 uppercase font-black tracking-[0.2em]">{owner.name}</p>
         </div>
       </div>
 
@@ -135,20 +135,20 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
       {/* Financial Breakdown */}
       <div className="grid grid-cols-2 gap-4">
         <div className="glass rounded-[2rem] p-5">
-          <div className="text-[9px] text-white/40 mb-1 uppercase font-black tracking-widest">2025 carry forward</div>
-          <div className="text-xl font-black text-indigo-400">{formatCurrency(p2026.carryForward2025)}</div>
-          <div className="text-[8px] mt-2 text-white/20 font-bold uppercase tracking-wider">Balance from 2025</div>
+          <div className="text-[9px] text-white/50 mb-1 uppercase font-black tracking-widest">2025 carry forward</div>
+          <div className="text-xl font-black text-indigo-500 dark:text-indigo-400">{formatCurrency(p2026.carryForward2025)}</div>
+          <div className="text-[8px] mt-2 text-white/30 font-bold uppercase tracking-wider">Balance from 2025</div>
         </div>
         
         <div className={`glass rounded-[2rem] p-5 transition-colors duration-500 ${isDebt ? 'bg-rose-500/5' : 'bg-emerald-500/5'}`}>
-          <div className="text-[9px] text-white/40 mb-1 uppercase font-black tracking-widest flex items-center gap-1">
+          <div className="text-[9px] text-white/50 mb-1 uppercase font-black tracking-widest flex items-center gap-1">
              {isSurplus ? 'Surplus Credit' : isDebt ? 'Amount Outstanding' : 'Balance Settled'}
              {isSurplus ? <TrendingUp size={10} /> : isDebt ? <TrendingDown size={10} /> : null}
           </div>
-          <div className={`text-xl font-black ${isDebt ? 'text-rose-400' : 'text-cyan-400'}`}>
+          <div className={`text-xl font-black ${isDebt ? 'text-rose-500 dark:text-rose-400' : 'text-cyan-600 dark:text-cyan-400'}`}>
             {formatCurrency(Math.abs(calculated.currentBalance))}
           </div>
-          <div className="text-[8px] mt-2 text-white/20 font-bold uppercase tracking-wider">
+          <div className="text-[8px] mt-2 text-white/30 font-bold uppercase tracking-wider">
             {isSurplus ? 'Advance for Q2/Q3' : isDebt ? 'Q1 Payment Required' : 'Q1 Fully Paid'}
           </div>
         </div>
@@ -157,19 +157,19 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
       {/* Facility Status */}
       <div className="glass rounded-[2rem] p-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-cyan-500/20 rounded-xl text-cyan-400"><Activity size={18} /></div>
+          <div className="p-2 bg-cyan-500/20 rounded-xl text-cyan-600 dark:text-cyan-400"><Activity size={18} /></div>
           <h3 className="font-black text-xs uppercase tracking-widest text-white/50">Society Pulse</h3>
         </div>
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: 'Lifts', status: 'Online', icon: Zap, color: 'text-emerald-400' },
-            { label: 'Water', status: 'Stable', icon: Droplets, color: 'text-sky-400' },
-            { label: 'Security', status: 'Active', icon: Shield, color: 'text-indigo-400' },
+            { label: 'Lifts', status: 'Online', icon: Zap, color: 'text-emerald-500 dark:text-emerald-400' },
+            { label: 'Water', status: 'Stable', icon: Droplets, color: 'text-sky-500 dark:text-sky-400' },
+            { label: 'Security', status: 'Active', icon: Shield, color: 'text-indigo-500 dark:text-indigo-400' },
           ].map((f, i) => (
-            <div key={i} className="bg-white/5 p-4 rounded-2xl border border-white/5 flex flex-col items-center text-center">
+            <div key={i} className="bg-white/5 p-4 rounded-2xl border border-white/5 flex flex-col items-center text-center transition-all duration-300">
               <f.icon size={20} className={`mb-2 ${f.color}`} />
               <div className="text-[9px] font-black uppercase tracking-tighter text-white/40 mb-1">{f.label}</div>
-              <div className="text-[10px] font-bold">{f.status}</div>
+              <div className="text-[10px] font-bold text-white">{f.status}</div>
             </div>
           ))}
         </div>
@@ -179,7 +179,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
       <div className="glass rounded-[2.5rem] p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-black text-[10px] uppercase tracking-[0.2em] text-white/30">Monthly Ledger</h2>
-          <div className="flex bg-black/40 p-1 rounded-xl border border-white/10">
+          <div className="flex bg-black/40 p-1 rounded-xl border border-white/10 transition-colors duration-500">
             {[2025, 2026].map(y => (
               <button 
                 key={y}
@@ -199,7 +199,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
                 m.amount >= 2000 ? 'bg-emerald-500/20 border-emerald-400/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 
                 m.amount > 0 ? 'tile-partial border-amber-300/40' : 'bg-white/5 border-white/10'
               }`}>
-                {m.amount >= 2000 ? <CheckCircle2 size={16} className="text-emerald-400" /> : m.amount > 0 ? <Clock size={16} className="text-amber-300" /> : null}
+                {m.amount >= 2000 ? <CheckCircle2 size={16} className="text-emerald-500 dark:text-emerald-400" /> : m.amount > 0 ? <Clock size={16} className="text-amber-500 dark:text-amber-300" /> : null}
               </div>
               <span className="text-[8px] font-black text-white/30 uppercase tracking-tighter">{m.label}</span>
             </div>

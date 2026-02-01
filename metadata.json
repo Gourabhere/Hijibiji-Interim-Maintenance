@@ -1,0 +1,5 @@
+{
+  "name": "Hijibiji Maintenance Portal",
+  "description": "A glassmorphic, mobile-first society maintenance management app for residents and admins of Hijibiji Society, featuring payment tracking, carry-forward logic, and financial insights.",
+  "requestFramePermissions": []
+}

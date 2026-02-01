@@ -38,6 +38,8 @@ const App: React.FC = () => {
     
     if (initialTheme === 'light') {
       document.body.classList.add('light');
+    } else {
+      document.body.classList.remove('light');
     }
   }, []);
 
@@ -55,19 +57,26 @@ const App: React.FC = () => {
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
+      
+      // Create a promise that rejects after 3 seconds to avoid infinite loading
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Fetch timeout')), 3000)
+      );
+
       try {
-        const cloudData = await fetchAllData();
+        const cloudData = await Promise.race([fetchAllData(), timeoutPromise]) as any;
         if (cloudData && cloudData.owners?.length > 0) {
           setOwners(cloudData.owners);
           setP25List(cloudData.p25 || []);
           setP26List(cloudData.p26 || []);
           console.log('Successfully loaded data from Supabase');
         } else {
-          console.log('Supabase empty or unconfigured, using local data');
+          console.log('Cloud data unavailable, using built-in registry');
         }
       } catch (err) {
-        console.error('Failed to load from cloud:', err);
+        console.warn('Cloud connection skipped or timed out. Falling back to local data.');
       } finally {
+        // Ensure we always stop loading
         setIsLoading(false);
       }
     };
@@ -151,8 +160,8 @@ const App: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center text-white space-y-4">
-        <RefreshCw className="animate-spin text-indigo-400" size={48} />
+      <div className="min-h-screen flex flex-col items-center justify-center text-indigo-400 space-y-4">
+        <RefreshCw className="animate-spin" size={48} />
         <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Connecting to Hive...</p>
       </div>
     );
@@ -160,7 +169,6 @@ const App: React.FC = () => {
 
   return (
     <main className="min-h-screen transition-all duration-500">
-      {/* Universal Theme Toggle */}
       <button 
         onClick={toggleTheme}
         className="fixed top-6 right-6 z-[60] p-3 glass rounded-2xl hover:bg-white/10 transition-all neo-button"

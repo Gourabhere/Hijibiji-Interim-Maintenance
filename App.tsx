@@ -8,10 +8,11 @@ import {
 } from './data';
 import { Owner, DashboardData, Payment2025, Payment2026 } from './types';
 import { MONTHLY_EXPENSES_2025, Q1_DUE_AMOUNT } from './constants';
-import { fetchAllData } from './lib/supabase';
+import { fetchAllData, testConnection, debugInfo } from './lib/supabase';
 import OwnerDashboard from './components/OwnerDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import Login from './components/Login';
+import DataDebugTable from './components/DataDebugTable';
 
 const App: React.FC = () => {
   const [view, setView] = useState<'landing' | 'owner' | 'admin_login' | 'admin'>('landing');
@@ -22,6 +23,7 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isCloudLive, setIsCloudLive] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [diagnostics, setDiagnostics] = useState<string>('');
   const searchRef = useRef<HTMLDivElement>(null);
 
   // App Data State
@@ -60,25 +62,56 @@ const App: React.FC = () => {
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
+      let diagLog = '🚀 App initializing...\n';
       
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Fetch timeout')), 4000)
-      );
-
       try {
+        // Test connection
+        diagLog += '🧪 Testing Supabase...\n';
+        const isConnected = await testConnection();
+        
+        if (!isConnected) {
+          diagLog += '❌ Connection failed - using fallback\n';
+          setDiagnostics(diagLog);
+          setIsLoading(false);
+          return;
+        }
+        
+        diagLog += '✅ Connection OK\n';
+        diagLog += '📥 Fetching data...\n';
+        
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Fetch timeout')), 4000)
+        );
+
         const cloudData = await Promise.race([fetchAllData(), timeoutPromise]) as any;
+        
         if (cloudData && cloudData.owners?.length > 0) {
           setOwners(cloudData.owners);
           setP25List(cloudData.p25 || []);
           setP26List(cloudData.p26 || []);
           setIsCloudLive(true);
-          console.log('Successfully loaded data from Supabase');
+          diagLog += `✅ Loaded ${cloudData.owners.length} units\n`;
+          diagLog += `📊 P25 payments: ${cloudData.p25?.length || 0} records\n`;
+          diagLog += `📊 P26 payments: ${cloudData.p26?.length || 0} records\n`;
+          
+          // Warn if payment tables are empty
+          if (!cloudData.p25 || cloudData.p25.length === 0) {
+            diagLog += `⚠️ WARNING: Collections_2025 table is EMPTY!\n`;
+          }
+          if (!cloudData.p26 || cloudData.p26.length === 0) {
+            diagLog += `⚠️ WARNING: Collections_2026 table is EMPTY!\n`;
+          }
+          
+          console.log('✅ Successfully loaded data from Supabase');
         } else {
-          console.log('Cloud data empty or unavailable, using built-in registry');
+          diagLog += '⚠️ No data from cloud - using fallback\n';
+          console.log('⚠️ Cloud data empty or unavailable, using built-in registry');
         }
-      } catch (err) {
-        console.warn('Cloud connection issue:', err);
+      } catch (err: any) {
+        diagLog += `❌ Error: ${err?.message || 'Unknown'}\n`;
+        console.warn('⚠️ Cloud connection issue:', err);
       } finally {
+        setDiagnostics(diagLog);
         setIsLoading(false);
       }
     };
@@ -88,12 +121,14 @@ const App: React.FC = () => {
   useEffect(() => {
     const query = searchQuery.trim().toLowerCase();
     if (query.length > 0) {
+      // Filter based on search query
       const results = owners.filter(o => 
         o.flatNo.toLowerCase().includes(query) || 
         o.name.toLowerCase().includes(query)
       );
       setSearchResults(results);
     } else if (isSearchFocused) {
+      // When focused without query, show all units
       setSearchResults(owners);
     } else {
       setSearchResults([]);
@@ -110,10 +145,43 @@ const App: React.FC = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const calculateSharedExp2025 = (owner: Owner, carryForward: number) => {
-    if (carryForward === 0) return 0;
-    if (owner.possessionDate === 'Nov-25') return 1609;
-    return 3272;
+  const calculateSharedExp2025 = (p25: Payment2025) => {
+    // Determine which month they started paying
+    const monthlyPayments = {
+      aug: p25.aug,
+      sept: p25.sept,
+      oct: p25.oct,
+      nov: p25.nov,
+      dec: p25.dec
+    };
+
+    const monthOrder = ['aug', 'sept', 'oct', 'nov', 'dec'] as const;
+    
+    // Find first month with non-zero payment
+    const startMonth = monthOrder.find(month => monthlyPayments[month] > 0);
+    
+    if (!startMonth) return 0; // No payments made
+    
+    // Sum monthly expenses from start month onwards
+    const monthExpenses = {
+      aug: 0,
+      sept: 663,
+      oct: 1000,
+      nov: 815,
+      dec: 794
+    };
+    
+    let totalExpense = 0;
+    let countFromStart = false;
+    
+    for (const month of monthOrder) {
+      if (month === startMonth) countFromStart = true;
+      if (countFromStart) {
+        totalExpense += monthExpenses[month];
+      }
+    }
+    
+    return totalExpense;
   };
 
   const handleSelectOwner = (owner: Owner) => {
@@ -128,7 +196,7 @@ const App: React.FC = () => {
     const q1Payment = p26.q1Payment;
     const totalAvailable = carryForward + q1Payment;
     
-    const sharedExp2025 = calculateSharedExp2025(owner, carryForward);
+    const sharedExp2025 = calculateSharedExp2025(p25);
     const totalPaid2025 = carryForward + sharedExp2025;
     const lifetimePaid = totalPaid2025 + q1Payment;
     
@@ -221,8 +289,9 @@ const App: React.FC = () => {
             
             {(isSearchFocused && searchResults.length > 0) && (
               <div className="absolute top-[4.5rem] left-0 right-0 glass rounded-[1.5rem] overflow-hidden z-50 text-left shadow-2xl border-white/10 animate-in slide-in-from-top-2 max-h-72 overflow-y-auto">
-                <div className="px-4 py-2 border-b border-white/5 bg-white/5 text-[10px] font-black uppercase tracking-widest text-white/20">
-                  Select Unit for Dashboard
+                <div className="px-4 py-3 border-b border-white/5 bg-white/5 text-[10px] font-black uppercase tracking-widest text-white/40 flex justify-between items-center">
+                  <span>{searchQuery ? 'Matching Units' : 'All Units'}</span>
+                  <span className="text-white/60">{searchResults.length}</span>
                 </div>
                 {searchResults.map((owner) => (
                   <button 

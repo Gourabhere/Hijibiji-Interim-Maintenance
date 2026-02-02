@@ -1,136 +1,28 @@
 
 import { Owner, Payment2025, Payment2026, ExpenseRecord } from './types';
 
-// Full Registry from "Registered Owner Details" CSV
-export const owners: Owner[] = [
-  { sn: 1, flatNo: "1A3", name: "MAHABUB ALI", possessionDate: "Sep-25" },
-  { sn: 2, flatNo: "1B3", name: "SUBARNA BANDYOPADHYAY", possessionDate: "Aug-25" },
-  { sn: 3, flatNo: "1B8", name: "SUMANTA ADHIKARY", possessionDate: "Aug-25" },
-  { sn: 4, flatNo: "1C12", name: "SITARA MANISH MAKHIJA", possessionDate: "Aug-25" },
-  { sn: 5, flatNo: "1C6", name: "SUTAPA & TAPAN KUMAR DEBGOSWAMI", possessionDate: "Aug-25" },
-  { sn: 6, flatNo: "1D1", name: "SARMISHTHA MUKHOPADHYAY", possessionDate: "18-Nov-25" },
-  { sn: 7, flatNo: "1D2", name: "NIRMALENDU RAY", possessionDate: "Apr-25" },
-  { sn: 8, flatNo: "1D4", name: "BISWANATH NANDY", possessionDate: "Jun-22" },
-  { sn: 9, flatNo: "1E4", name: "AMINA KHATUN", possessionDate: "Nov-25" },
-  { sn: 10, flatNo: "1F8", name: "PRIYANKA CHOUDHURY", possessionDate: "Oct-25" },
-  { sn: 11, flatNo: "2A8", name: "MONOJIT MOULIK", possessionDate: "TBD" },
-  { sn: 12, flatNo: "2B1", name: "ARNAB DAS & TITLI DAS", possessionDate: "TBD" },
-  { sn: 13, flatNo: "2B9", name: "PRADIP KR GHOSH", possessionDate: "Aug-25" },
-  { sn: 14, flatNo: "2C2", name: "NELLY BLAKE", possessionDate: "Sep-25" },
-  { sn: 15, flatNo: "2D7", name: "SWETA BHATTACHARYA", possessionDate: "TBD" },
-  { sn: 16, flatNo: "3A12", name: "SUDHIRANJAN KHANDA", possessionDate: "TBD" },
-  { sn: 17, flatNo: "3A2", name: "MANISHA BHATTACHARYA", possessionDate: "TBD" },
-  { sn: 18, flatNo: "3A3", name: "PARAMITA MANDAL", possessionDate: "TBD" },
-  { sn: 19, flatNo: "3A4", name: "SANAM PARVIN", possessionDate: "TBD" },
-  { sn: 20, flatNo: "3A5", name: "SAYAN BANERJEE", possessionDate: "Apr-25" },
-  { sn: 21, flatNo: "3B1", name: "GOURAB SAHA", possessionDate: "May-25" },
-  { sn: 22, flatNo: "3B10", name: "JAYANTA GHOSH", possessionDate: "TBD" },
-  { sn: 23, flatNo: "3B2", name: "SHUVAYU GHOSH", possessionDate: "Apr-25" },
-  { sn: 24, flatNo: "3B3", name: "ARSHAD ALI", possessionDate: "TBD" },
-  { sn: 25, flatNo: "3B9", name: "SUMANTA BASU", possessionDate: "15-Nov-25" },
-  { sn: 26, flatNo: "3C5", name: "TITIL KAR SINGHA", possessionDate: "Oct-25" },
-  { sn: 27, flatNo: "3C6", name: "CHANDANA PRIYADARSHINI SARANGI", possessionDate: "July-25" },
-  { sn: 28, flatNo: "3D2", name: "BARNALI CHAKRABORTY", possessionDate: "TBD" },
-  { sn: 29, flatNo: "3D3", name: "TAPAN KR BANDHU", possessionDate: "Jun-25" },
-  { sn: 30, flatNo: "3D4", name: "SOUMITRA ROY CHOUDHURY", possessionDate: "TBD" },
-  { sn: 31, flatNo: "3D9", name: "SAHELI JANA (PAUL)", possessionDate: "TBD" },
-  { sn: 32, flatNo: "3E1", name: "ARUN KUMAR DAS", possessionDate: "Nov-22" },
-  { sn: 33, flatNo: "3E11", name: "DIBYAPRABHA GIRI", possessionDate: "TBD" },
-  { sn: 34, flatNo: "3E12", name: "SANTANU ROY", possessionDate: "TBD" },
-  { sn: 35, flatNo: "3E3", name: "SUMAN SAHA", possessionDate: "Apr-25" },
-  { sn: 36, flatNo: "3E9", name: "SOMENATH MUKHERJEE", possessionDate: "Nov-25" },
-  { sn: 37, flatNo: "4A1", name: "MD. JAHANGIR", possessionDate: "Sep-25" },
-  { sn: 38, flatNo: "4A10", name: "JUNAID ALI", possessionDate: "TBD" },
-  { sn: 39, flatNo: "4A2", name: "MD SHARFUDDIN", possessionDate: "Aug-25" },
-  { sn: 40, flatNo: "4A3", name: "MAHFOOZ REZA", possessionDate: "Aug-25" },
-  { sn: 41, flatNo: "4A4", name: "AYSWARJYA SINHA", possessionDate: "TBD" },
-  { sn: 42, flatNo: "46A", name: "ASIF JAMAL", possessionDate: "TBD" },
-  { sn: 43, flatNo: "4A7", name: "MD SAJID AKHTAR", possessionDate: "TBD" },
-  { sn: 44, flatNo: "4A9", name: "ANKITA CHOUDHURY", possessionDate: "Jul-25" },
-  { sn: 45, flatNo: "4B2", name: "RISHAV DAS", possessionDate: "TBD" },
-  { sn: 46, flatNo: "4B4", name: "PRABHAKAR SINGH", possessionDate: "TBD" },
-  { sn: 47, flatNo: "4B6", name: "ARIJIT BANIK", possessionDate: "TBD" },
-  { sn: 48, flatNo: "4C1", name: "MD. ALIREJA", possessionDate: "TBD" },
-  { sn: 49, flatNo: "4C4", name: "DEBASHREE SARKAR", possessionDate: "TBD" },
-  { sn: 50, flatNo: "4E10", name: "PANKAJ KUMAR", possessionDate: "TBD" },
-  { sn: 51, flatNo: "4E2", name: "SOUMEN CHAKRABORTY", possessionDate: "TBD" },
-  { sn: 52, flatNo: "4E4", name: "ARIJIT CHATTERJEE", possessionDate: "Aug-25" },
-  { sn: 53, flatNo: "4E6", name: "MOHAMMAD FAHAD JIBRAN", possessionDate: "4-Nov-25" },
-  { sn: 54, flatNo: "4E7", name: "MOHAMMED ANWAR", possessionDate: "TBD" },
-  { sn: 55, flatNo: "4E8", name: "SUCHARITA & SOUVIK", possessionDate: "May-25" },
-  { sn: 56, flatNo: "5A5", name: "AMLAN DUTTA", possessionDate: "Aug-22" },
-  { sn: 57, flatNo: "5A6", name: "AMLAN DUTTA", possessionDate: "Aug-22" },
-  { sn: 58, flatNo: "5A7", name: "PEYALI CHAKRABORTY", possessionDate: "Sep-25" },
-  { sn: 59, flatNo: "5A9", name: "SANDHI MAJUMDER", possessionDate: "TBD" },
-  { sn: 60, flatNo: "5B1", name: "SAFIULLA SHAIKH", possessionDate: "TBD" },
-  { sn: 61, flatNo: "5B2", name: "AMARNATH KARMAKAR", possessionDate: "TBD" },
-  { sn: 62, flatNo: "5B4", name: "DHRUBA NAN", possessionDate: "Mar-23" },
-  { sn: 63, flatNo: "5B6", name: "SAIBAL BASAK", possessionDate: "Jul-24" },
-  { sn: 64, flatNo: "5B7", name: "ANUPAM SHOME", possessionDate: "TBD" },
-  { sn: 65, flatNo: "5B8", name: "MD. NADIM", possessionDate: "Aug-25" },
-  { sn: 66, flatNo: "5B9", name: "AYESHA NADIM", possessionDate: "TBD" },
-  { sn: 67, flatNo: "5C2", name: "BANI KHAN", possessionDate: "TBD" },
-  { sn: 68, flatNo: "5D1", name: "MANJITA CHOUDHURY", possessionDate: "TBD" },
-  { sn: 69, flatNo: "5D10", name: "SWARNA MAITY", possessionDate: "Oct-25" },
-  { sn: 70, flatNo: "5D7", name: "ARUP KUMAR BASAK", possessionDate: "TBD" },
-  { sn: 71, flatNo: "5D8", name: "VICTOR BASU", possessionDate: "TBD" },
-  { sn: 72, flatNo: "6A11", name: "SUDIPTO ROY", possessionDate: "Oct-25" },
-  { sn: 73, flatNo: "6A7", name: "PRONOTI GHOSH", possessionDate: "Nov-25" },
-  { sn: 74, flatNo: "6B1", name: "SRABONI CHAKRABORTY", possessionDate: "Oct-25" },
-  { sn: 75, flatNo: "6B2", name: "RAKESH KUMAR CHAHAR", possessionDate: "Oct-25" },
-  { sn: 76, flatNo: "6B7", name: "ANANDA KUMAR SAMANTA", possessionDate: "Sep-25" },
-  { sn: 77, flatNo: "6B8", name: "MAYURIKA DAS", possessionDate: "Nov-25" },
-  { sn: 78, flatNo: "6C11", name: "PAUL BARMAL ROY", possessionDate: "Oct-25" },
-  { sn: 79, flatNo: "6C3", name: "BISHNU CHARAN MISHRA", possessionDate: "Oct-25" },
-  { sn: 80, flatNo: "6C4", name: "KRISHNENDU DUTTA", possessionDate: "Nov-25" },
-  { sn: 81, flatNo: "6C9", name: "MD. SHADAB", possessionDate: "Oct-25" },
-  { sn: 82, flatNo: "6D5", name: "MANAS RANJAN CHATTJEE", possessionDate: "Aug-25" },
-  { sn: 83, flatNo: "4D10", name: "SUBHADEEP BHATTACHARJEE", possessionDate: "Dec-25" },
-  { sn: 84, flatNo: "1A2", name: "SATYA VIKAS", possessionDate: "Dec-25" },
-  { sn: 85, flatNo: "5E2", name: "SHAHBAZ HABIB", possessionDate: "Dec-25" },
-  { sn: 86, flatNo: "2C1", name: "RAHUL PANDAY", possessionDate: "Dec-25" },
-  { sn: 87, flatNo: "5C7", name: "PRIYANKA SAHA", possessionDate: "Nov-25" },
-  { sn: 88, flatNo: "1E1", name: "EMPTY UNIT 1E1", possessionDate: "TBD" },
-  { sn: 89, flatNo: "1E3", name: "EMPTY UNIT 1E3", possessionDate: "TBD" },
-  { sn: 90, flatNo: "6B3", name: "EMPTY UNIT 6B3", possessionDate: "TBD" },
-  { sn: 91, flatNo: "2B3", name: "EMPTY UNIT 2B3", possessionDate: "TBD" }
-];
+/*
+Full Registry from "Registered Owner Details" CSV
+All hardcoded data has been moved to Supabase database.
+See lib/supabase.ts for connection and data fetching.
+*/
 
-// Complete mapping from "Collections 2026" CSV
-export const payments2026: Payment2026[] = [
-  { flatNo: "1A3", carryForward2025: 0, q1Payment: 4000, jan: 0, feb: 2000, mar: 2000, apr: 0, may: 0, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 4000, outstanding: 0 },
-  { flatNo: "1B3", carryForward2025: 9228, q1Payment: 6000, jan: 2000, feb: 2000, mar: 2000, apr: 2000, may: 2000, jun: 2000, jul: 2000, aug: 1228, sep: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 15228, outstanding: -9228 },
-  { flatNo: "1B8", carryForward2025: 0, q1Payment: 0, jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 0, outstanding: 6000 },
-  { flatNo: "1C12", carryForward2025: 6728, q1Payment: 0, jan: 2000, feb: 2000, mar: 2000, apr: 728, may: 0, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 6728, outstanding: -728 },
-  { flatNo: "1C6", carryForward2025: 6728, q1Payment: 0, jan: 2000, feb: 2000, mar: 2000, apr: 728, may: 0, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 6728, outstanding: -728 },
-  { flatNo: "1D1", carryForward2025: 1706, q1Payment: 6000, jan: 2000, feb: 2000, mar: 2000, apr: 1706, may: 0, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 7706, outstanding: -1706 },
-  { flatNo: "1D2", carryForward2025: 9229, q1Payment: 0, jan: 2000, feb: 2000, mar: 2000, apr: 2000, may: 1229, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 9229, outstanding: -3229 },
-  { flatNo: "1D4", carryForward2025: 4228, q1Payment: 0, jan: 2000, feb: 2000, mar: 228, apr: 0, may: 0, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 4228, outstanding: 1772 },
-  { flatNo: "1E4", carryForward2025: 0, q1Payment: 0, jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 0, outstanding: 6000 },
-  { flatNo: "2A8", carryForward2025: 0, q1Payment: 6000, jan: 2000, feb: 2000, mar: 2000, apr: 0, may: 0, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 6000, outstanding: 0 },
-  { flatNo: "2B9", carryForward2025: 4228, q1Payment: 6000, jan: 2000, feb: 2000, mar: 2000, apr: 2000, may: 2000, jun: 228, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 10228, outstanding: -4228 },
-  { flatNo: "3A3", carryForward2025: 9228, q1Payment: 0, jan: 2000, feb: 2000, mar: 2000, apr: 2000, may: 1228, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 9228, outstanding: -3228 },
-  { flatNo: "3A4", carryForward2025: 9228, q1Payment: 0, jan: 2000, feb: 2000, mar: 2000, apr: 2000, may: 1228, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 9228, outstanding: -3228 },
-  { flatNo: "3A5", carryForward2025: 9229, q1Payment: 0, jan: 2000, feb: 2000, mar: 2000, apr: 2000, may: 1229, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 9229, outstanding: -3229 },
-  { flatNo: "3B1", carryForward2025: 9228, q1Payment: 0, jan: 2000, feb: 2000, mar: 2000, apr: 2000, may: 1228, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 9228, outstanding: -3228 },
-  { flatNo: "3C6", carryForward2025: 9228, q1Payment: 0, jan: 2000, feb: 2000, mar: 2000, apr: 2000, may: 1228, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 9228, outstanding: -3228 },
-  { flatNo: "3D3", carryForward2025: 9228, q1Payment: 0, jan: 2000, feb: 2000, mar: 2000, apr: 2000, may: 1228, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 9228, outstanding: -3228 },
-  { flatNo: "3D4", carryForward2025: 9228, q1Payment: 6000, jan: 2000, feb: 2000, mar: 2000, apr: 2000, may: 2000, jun: 2000, jul: 2000, aug: 1228, sep: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 15228, outstanding: -9228 },
-  { flatNo: "3E11", carryForward2025: 30, q1Payment: 6000, jan: 2000, feb: 2000, mar: 2000, apr: 30, may: 0, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 6030, outstanding: -30 }
-];
+// Fallback/Default exports for when Supabase is unavailable
+export const owners: Owner[] = [];
 
-// Simplified Mapped Expense Summary
-export const societyExpenses2025: ExpenseRecord[] = [
-  { category: "Security", aug: 64729, sep: 60181, oct: 56961, nov: 73575, dec: 75733 },
-  { category: "House Keeping", aug: 0, sep: 36000, oct: 36000, nov: 34400, dec: 35226 },
-  { category: "Caretaker", aug: 0, sep: 8000, oct: 8000, nov: 8000, dec: 8000 },
-  { category: "Other", aug: 0, sep: 1266, oct: 0, nov: 0, dec: 1223 },
-];
+export const payments2026: Payment2026[] = [];
+
+export const societyExpenses2025: ExpenseRecord[] = [];
 
 export const totalCollections2025 = {
-  owners: 510004,
-  realtech: 351262,
-  total: 861266
+  owners: 0,
+  realtech: 0,
+  total: 0
 };
 
 export const payments2025: Payment2025[] = [];
+
+// Note: Data is loaded dynamically from Supabase
+// See App.tsx for fetchAllData() which loads owners, payments2025, and payments2026
+// Supabase Project: https://bhdrlzaqejkrqsozbcbr.supabase.co
+// Tables: owners, payments_2025, payments_2026

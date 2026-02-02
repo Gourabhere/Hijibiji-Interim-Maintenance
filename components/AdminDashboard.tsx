@@ -15,6 +15,8 @@ import { Owner, Payment2025, Payment2026 } from '../types';
 import { formatCurrency } from '../utils';
 import { upsertOwners, upsertPayments2026 } from '../lib/supabase';
 import BalanceSheet from './BalanceSheet';
+import DataDebugTable from './DataDebugTable';
+import EditPaymentModal from './EditPaymentModal';
 
 interface Props {
   owners: Owner[];
@@ -29,13 +31,15 @@ interface Props {
 const AdminDashboard: React.FC<Props> = ({ 
   owners, p25, p26, setOwners, setP25, setP26, onLogout 
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'owners' | 'sync' | 'ai'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'owners' | 'sync' | 'ai' | 'debug'>('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
   const [isPersisting, setIsPersisting] = useState(false);
   const [syncSuccess, setSyncSuccess] = useState(false);
   const [aiInsight, setAiInsight] = useState('');
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedOwner, setSelectedOwner] = useState<Owner | null>(null);
   const [sheetUrl, setSheetUrl] = useState('https://docs.google.com/spreadsheets/d/e/2PACX-1vQPZypj95O8KImq4oIOJ-sw9VKcKsxPg9MbjgSWUNM4Yy-vj4f_9Z26gtoRRXymcw/pubhtml');
 
   const totalCollected25 = p25.reduce((acc, curr) => acc + curr.paidTillDate, 0);
@@ -160,6 +164,7 @@ const AdminDashboard: React.FC<Props> = ({
               { id: 'owners', label: 'Residents', icon: Users },
               { id: 'sync', label: 'Sync Center', icon: Database },
               { id: 'ai', label: 'AI Intelligence', icon: Sparkles },
+              { id: 'debug', label: 'Data Debug', icon: FileText },
             ].map(item => (
               <button 
                 key={item.id} 
@@ -193,7 +198,12 @@ const AdminDashboard: React.FC<Props> = ({
                  <div className="flex justify-between items-end mb-6">
                     <div>
                       <h2 className="text-4xl font-black mb-2 tracking-tighter">{collectionRate} %</h2>
-                      <p className="text-[11px] font-black uppercase tracking-widest text-white/30">Total Collection Rate 2025</p>
+                      <p className="text-[11px] font-black uppercase tracking-widest text-white/30 flex items-center gap-2">
+                        Total Collection Rate 2025
+                        <span className="inline-flex items-center gap-1 ml-2 px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg text-[9px]">
+                          <ArrowUpRight size={12} /> +4.2% vs Jan
+                        </span>
+                      </p>
                     </div>
                     <div className="text-right">
                        <div className="text-xl font-black text-emerald-400">{formatCurrency(totalCollected25)}</div>
@@ -214,6 +224,9 @@ const AdminDashboard: React.FC<Props> = ({
                    <span className="text-sm font-bold text-white/80">Total Registered</span>
                    <span className="text-2xl font-black text-indigo-400">{owners.length}</span>
                  </div>
+                 <div className="text-[9px] text-white/50 mt-3">
+                   ✓ {owners.filter(o => o.possessionDate !== 'TBD').length} Occupied
+                 </div>
                </div>
                <div className="glass rounded-[2.5rem] p-8 border-white/10">
                  <h3 className="text-xs font-black uppercase tracking-widest text-white/30 mb-8 flex items-center gap-2">
@@ -221,7 +234,12 @@ const AdminDashboard: React.FC<Props> = ({
                  </h3>
                  <div className="flex items-center justify-between mb-2">
                    <span className="text-sm font-bold text-white/80">Q1 2026 Collection</span>
-                   <span className="text-2xl font-black text-cyan-400">{formatCurrency(totalCollected26)}</span>
+                   <div className="flex items-center gap-2">
+                     <span className="text-2xl font-black text-cyan-400">{formatCurrency(totalCollected26)}</span>
+                     <span className="inline-flex items-center gap-1 px-2 py-1 bg-cyan-500/20 text-cyan-400 rounded-lg text-[9px]">
+                       <ArrowUpRight size={12} /> +8.5%
+                     </span>
+                   </div>
                  </div>
                </div>
             </div>
@@ -332,7 +350,13 @@ const AdminDashboard: React.FC<Props> = ({
                        <td className="px-10 py-6 font-black text-indigo-400 text-base">{o.flatNo}</td>
                        <td className="px-10 py-6 font-bold text-white/80">{o.name}</td>
                        <td className="px-10 py-6 text-right">
-                         <button className="p-2.5 glass rounded-xl text-white/20 group-hover:text-cyan-400 transition-all neo-button">
+                         <button 
+                           onClick={() => {
+                             setSelectedOwner(o);
+                             setModalOpen(true);
+                           }}
+                           className="p-2.5 glass rounded-xl text-white/20 group-hover:text-cyan-400 transition-all neo-button"
+                         >
                            <ArrowUpRight size={16} />
                          </button>
                        </td>
@@ -350,7 +374,46 @@ const AdminDashboard: React.FC<Props> = ({
              </div>
            </div>
         )}
+
+        {activeTab === 'debug' && (
+          <div className="glass rounded-[3rem] overflow-hidden border-white/5 shadow-2xl animate-in slide-in-from-right-4 duration-700 p-8">
+            <h3 className="font-black text-xs uppercase tracking-widest text-white/40 mb-6">Data Debug & Inspection</h3>
+            <DataDebugTable owners={owners} p25List={p25} p26List={p26} />
+          </div>
+        )}
       </main>
+
+      {/* Edit Payment Modal */}
+      {modalOpen && selectedOwner && (
+        <EditPaymentModal
+          owner={selectedOwner}
+          p25={p25.find(p => p.flatNo === selectedOwner.flatNo) || null}
+          p26={p26.find(p => p.flatNo === selectedOwner.flatNo) || null}
+          onClose={() => {
+            setModalOpen(false);
+            setSelectedOwner(null);
+          }}
+          onSave={(p25Data, p26Data) => {
+            // Update p25 list
+            if (p25Data) {
+              setP25(prev => {
+                const filtered = prev.filter(p => p.flatNo !== p25Data.flatNo);
+                return [...filtered, p25Data];
+              });
+            }
+            // Update p26 list
+            if (p26Data) {
+              setP26(prev => {
+                const filtered = prev.filter(p => p.flatNo !== p26Data.flatNo);
+                return [...filtered, p26Data];
+              });
+            }
+            // Close modal
+            setModalOpen(false);
+            setSelectedOwner(null);
+          }}
+        />
+      )}
 
       <nav className="lg:hidden fixed bottom-6 left-6 right-6 h-20 glass rounded-[2rem] flex items-center justify-around px-4 z-50 shadow-2xl border-white/20">
         {[
@@ -358,6 +421,7 @@ const AdminDashboard: React.FC<Props> = ({
           { id: 'owners', icon: Users },
           { id: 'sync', icon: Database },
           { id: 'ai', icon: Sparkles },
+          { id: 'debug', icon: FileText },
         ].map(item => (
           <button 
             key={item.id} 

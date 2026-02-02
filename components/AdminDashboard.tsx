@@ -5,7 +5,7 @@ import {
   Search, FileText, LayoutDashboard, Database,
   Shield, RefreshCw, Sparkles, Link as LinkIcon, 
   ArrowUpRight, Clock, CheckCircle, AlertCircle,
-  Info, CloudUpload
+  Info, CloudUpload, Menu, X
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
@@ -13,7 +13,7 @@ import {
 import { GoogleGenAI, Type } from "@google/genai";
 import { Owner, Payment2025, Payment2026 } from '../types';
 import { formatCurrency } from '../utils';
-import { upsertOwners, upsertPayments2026 } from '../lib/supabase';
+import { upsertOwners, upsertPayments2026, upsertPayments2025, fetchAllData } from '../lib/supabase';
 import BalanceSheet from './BalanceSheet';
 import DataDebugTable from './DataDebugTable';
 import EditPaymentModal from './EditPaymentModal';
@@ -38,9 +38,10 @@ const AdminDashboard: React.FC<Props> = ({
   const [syncSuccess, setSyncSuccess] = useState(false);
   const [aiInsight, setAiInsight] = useState('');
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedOwner, setSelectedOwner] = useState<Owner | null>(null);
   const [sheetUrl, setSheetUrl] = useState('https://docs.google.com/spreadsheets/d/e/2PACX-1vQPZypj95O8KImq4oIOJ-sw9VKcKsxPg9MbjgSWUNM4Yy-vj4f_9Z26gtoRRXymcw/pubhtml');
+  const [editingOwner, setEditingOwner] = useState<Owner | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
   const totalCollected25 = p25.reduce((acc, curr) => acc + curr.paidTillDate, 0);
   const totalOutstanding25 = p25.reduce((acc, curr) => acc + (curr.outstanding || 0), 0);
@@ -109,6 +110,25 @@ const AdminDashboard: React.FC<Props> = ({
     finally { setIsGeneratingAi(false); }
   };
 
+  const handleEditPayment = async (p25Data: Payment2025, p26Data: Payment2026) => {
+    try {
+      await upsertPayments2025([p25Data]);
+      await upsertPayments2026([p26Data]);
+      
+      // Refresh data from Supabase
+      const newData = await fetchAllData();
+      setOwners(newData.owners);
+      setP25(newData.p25);
+      setP26(newData.p26);
+      
+      setShowEditModal(false);
+      setEditingOwner(null);
+    } catch (err) {
+      console.error('Payment update failed:', err);
+      alert('Failed to update payment. Please try again.');
+    }
+  };
+
   const getFilteredOwners = () => {
     if (!searchTerm.trim()) return owners;
     
@@ -147,47 +167,52 @@ const AdminDashboard: React.FC<Props> = ({
 
   return (
     <div className="min-h-screen p-4 md:p-8 max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
-      <aside className="w-full lg:w-80 space-y-6">
-        <div className="glass rounded-[3rem] p-8 shadow-2xl border-white/10 h-fit">
-          <div className="flex items-center gap-4 mb-12">
-            <div className="w-14 h-14 bg-indigo-600 rounded-[1.5rem] flex items-center justify-center shadow-2xl shadow-indigo-500/30 text-white">
-              <Shield size={28} />
-            </div>
-            <div>
-              <h1 className="font-black text-lg tracking-tight">Admin</h1>
-              <p className="text-[10px] text-indigo-400 font-black uppercase tracking-widest">Hijibiji Cloud</p>
-            </div>
-          </div>
-          <nav className="space-y-2">
-            {[
-              { id: 'overview', label: 'Dashboard', icon: LayoutDashboard },
-              { id: 'owners', label: 'Residents', icon: Users },
-              { id: 'sync', label: 'Sync Center', icon: Database },
-              { id: 'ai', label: 'AI Intelligence', icon: Sparkles },
-              { id: 'debug', label: 'Data Debug', icon: FileText },
-            ].map(item => (
-              <button 
-                key={item.id} 
-                onClick={() => setActiveTab(item.id as any)} 
-                className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${
-                  activeTab === item.id 
-                    ? 'bg-white text-indigo-900 shadow-2xl' 
-                    : 'text-white/40 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <item.icon size={20} /> {item.label}
-              </button>
-            ))}
-          </nav>
-          <div className="mt-12 pt-8 border-t border-white/5">
-            <button onClick={onLogout} className="w-full flex items-center gap-4 px-6 py-4 text-[11px] font-black uppercase tracking-widest text-rose-400 hover:bg-rose-400/10 rounded-2xl transition-all">
-              <LogOut size={20} /> Logout
+      {/* Hamburger Menu Button */}
+      <button
+        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        className="hidden lg:fixed lg:block top-6 left-6 z-50 p-3 glass rounded-2xl hover:bg-white/10 transition-all neo-button"
+        title={isSidebarCollapsed ? 'Expand menu' : 'Collapse menu'}
+      >
+        {isSidebarCollapsed ? <Menu size={20} /> : <X size={20} />}
+      </button>
+
+      <aside className={`w-full lg:space-y-6 transition-all duration-300 ${ isSidebarCollapsed ? 'lg:w-24' : 'lg:w-80' }`}>
+        <nav className="space-y-2">
+          {[
+            { id: 'overview', label: 'Dashboard', icon: LayoutDashboard },
+            { id: 'owners', label: 'Residents', icon: Users },
+            { id: 'sync', label: 'Sync Center', icon: Database },
+            { id: 'ai', label: 'AI Intelligence', icon: Sparkles },
+            { id: 'debug', label: 'Data Debug', icon: FileText },
+          ].map(item => (
+            <button 
+              key={item.id} 
+              onClick={() => setActiveTab(item.id as any)} 
+              className={`w-full flex items-center ${ isSidebarCollapsed ? 'justify-center' : 'gap-4' } px-6 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${
+                activeTab === item.id 
+                  ? 'bg-white text-indigo-900 shadow-2xl' 
+                  : 'text-white/40 hover:text-white hover:bg-white/5'
+              }`}
+              title={isSidebarCollapsed ? item.label : ''}
+            >
+              <item.icon size={20} /> 
+              {!isSidebarCollapsed && item.label}
             </button>
-          </div>
+          ))}
+        </nav>
+        <div className={`mt-12 pt-8 border-t border-white/5 ${ isSidebarCollapsed ? 'flex justify-center' : '' }`}>
+          <button 
+            onClick={onLogout} 
+            className={`flex items-center ${ isSidebarCollapsed ? 'justify-center p-4' : 'gap-4 px-6 py-4 w-full' } text-[11px] font-black uppercase tracking-widest text-rose-400 hover:bg-rose-400/10 rounded-2xl transition-all`}
+            title={isSidebarCollapsed ? 'Logout' : ''}
+          >
+            <LogOut size={20} /> 
+            {!isSidebarCollapsed && 'Logout'}
+          </button>
         </div>
       </aside>
 
-      <main className="flex-1 space-y-8 min-w-0">
+      <main className="flex-1 space-y-8 min-w-0 lg:pl-20">
         {activeTab === 'overview' && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="glass rounded-[3rem] p-10 border-white/10 relative overflow-hidden group">
@@ -352,8 +377,12 @@ const AdminDashboard: React.FC<Props> = ({
                        <td className="px-10 py-6 text-right">
                          <button 
                            onClick={() => {
-                             setSelectedOwner(o);
-                             setModalOpen(true);
+                             const ownerP25 = p25.find(p => p.flatNo === o.flatNo);
+                             const ownerP26 = p26.find(p => p.flatNo === o.flatNo);
+                             if (ownerP25 && ownerP26) {
+                               setEditingOwner(o);
+                               setShowEditModal(true);
+                             }
                            }}
                            className="p-2.5 glass rounded-xl text-white/20 group-hover:text-cyan-400 transition-all neo-button"
                          >
@@ -383,38 +412,6 @@ const AdminDashboard: React.FC<Props> = ({
         )}
       </main>
 
-      {/* Edit Payment Modal */}
-      {modalOpen && selectedOwner && (
-        <EditPaymentModal
-          owner={selectedOwner}
-          p25={p25.find(p => p.flatNo === selectedOwner.flatNo) || null}
-          p26={p26.find(p => p.flatNo === selectedOwner.flatNo) || null}
-          onClose={() => {
-            setModalOpen(false);
-            setSelectedOwner(null);
-          }}
-          onSave={(p25Data, p26Data) => {
-            // Update p25 list
-            if (p25Data) {
-              setP25(prev => {
-                const filtered = prev.filter(p => p.flatNo !== p25Data.flatNo);
-                return [...filtered, p25Data];
-              });
-            }
-            // Update p26 list
-            if (p26Data) {
-              setP26(prev => {
-                const filtered = prev.filter(p => p.flatNo !== p26Data.flatNo);
-                return [...filtered, p26Data];
-              });
-            }
-            // Close modal
-            setModalOpen(false);
-            setSelectedOwner(null);
-          }}
-        />
-      )}
-
       <nav className="lg:hidden fixed bottom-6 left-6 right-6 h-20 glass rounded-[2rem] flex items-center justify-around px-4 z-50 shadow-2xl border-white/20">
         {[
           { id: 'overview', icon: LayoutDashboard },
@@ -432,6 +429,20 @@ const AdminDashboard: React.FC<Props> = ({
           </button>
         ))}
       </nav>
+
+      {editingOwner && (
+        <EditPaymentModal
+          isOpen={showEditModal}
+          owner={editingOwner}
+          p25={p25.find(p => p.flatNo === editingOwner.flatNo) || null}
+          p26={p26.find(p => p.flatNo === editingOwner.flatNo) || null}
+          onClose={() => {
+            setShowEditModal(false);
+            setEditingOwner(null);
+          }}
+          onSave={handleEditPayment}
+        />
+      )}
     </div>
   );
 };

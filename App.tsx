@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Building2, Shield, User, Info, ArrowRight, X, RefreshCw, Sun, Moon, Cloud } from 'lucide-react';
+import { Search, Building2, Shield, User, Info, ArrowRight, X, RefreshCw, Sun, Moon, Cloud, Users, CheckCircle, TrendingUp } from 'lucide-react';
 import { 
   owners as initialOwners, 
   payments2025 as initialP25, 
@@ -241,7 +241,7 @@ const App: React.FC = () => {
     <main className="min-h-screen transition-all duration-500">
       <button 
         onClick={toggleTheme}
-        className="fixed top-6 right-6 z-[60] p-3 glass rounded-2xl hover:bg-white/10 transition-all neo-button"
+        className="fixed top-6 left-6 z-[60] p-3 glass rounded-2xl hover:bg-white/10 transition-all neo-button"
         title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
       >
         {theme === 'dark' ? <Sun size={20} className="text-amber-400" /> : <Moon size={20} className="text-indigo-600" />}
@@ -308,6 +308,43 @@ const App: React.FC = () => {
                 ))}
               </div>
             )}
+          </div>
+
+          {/* KPI Cards */}
+          <div className="w-full max-w-md grid grid-cols-3 gap-4 mb-12">
+            {/* Registered Flats */}
+            <div className="glass rounded-[1.5rem] p-4 shadow-2xl border-white/10 hover:shadow-xl hover:border-white/20 transition-all group text-center">
+              <div className="flex items-center justify-center mb-3">
+                <Users size={20} className="text-indigo-400 group-hover:scale-110 transition-transform" />
+              </div>
+              <div className="text-2xl font-black text-white mb-2">{owners.length}</div>
+              <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider">Registered Flats</p>
+            </div>
+
+            {/* Q1 Paid / Covered */}
+            <div className="glass rounded-[1.5rem] p-4 shadow-2xl border-white/10 hover:shadow-xl hover:border-white/20 transition-all group text-center">
+              <div className="flex items-center justify-center mb-3">
+                <CheckCircle size={20} className="text-emerald-400 group-hover:scale-110 transition-transform" />
+              </div>
+              <div className="text-2xl font-black text-white mb-2">
+                {p26List.filter(p => (p.q1Payment || 0) >= 6000).length}
+              </div>
+              <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider">Q1 Paid / Covered</p>
+            </div>
+
+            {/* Collection Rate */}
+            <div className="glass rounded-[1.5rem] p-4 shadow-2xl border-white/10 hover:shadow-xl hover:border-white/20 transition-all group text-center">
+              <div className="flex items-center justify-center mb-3">
+                <TrendingUp size={20} className="text-cyan-400 group-hover:scale-110 transition-transform" />
+              </div>
+              <div className="text-2xl font-black text-white mb-2">
+                {owners.length > 0 
+                  ? ((p26List.filter(p => (p.q1Payment || 0) >= 6000).length / owners.length) * 100).toFixed(1)
+                  : '0'
+                }%
+              </div>
+              <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider">Collection Rate</p>
+            </div>
           </div>
 
           <button 

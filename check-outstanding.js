@@ -5,6 +5,19 @@ import { supabase } from './lib/supabase.js';
 
 // Function to get outstanding amount for a specific flat
 async function getOutstandingForFlat(flatNo) {
+  // EXCEPTION: Force 0 outstanding for 1A3 and 1E1
+  const exemptedFlats = ["1a3", "1e1"];
+  // Check if the current flat is in the exempted list.
+  if (exemptedFlats.includes(flatNo.toLowerCase())) {
+    console.log(`\n✅ ${flatNo} is exempt. Outstanding forced to 0.`);
+    return {
+      flatNo,
+      outstanding2025: 0,
+      outstanding2026: 0,
+      totalOutstanding: 0
+    };
+  }
+
   try {
     console.log(`\n🔍 Checking outstanding for flat: ${flatNo}`);
     

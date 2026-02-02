@@ -14,7 +14,7 @@ const Login: React.FC<Props> = ({ onSuccess, onCancel }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === 'admin' && password === 'admin123') {
+    if (username === 'admin' && password === 'Ultimatix@1') {
       onSuccess();
     } else {
       setError('Invalid credentials. Access denied.');

@@ -1,18 +1,17 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Building2, Shield, User, Info, ArrowRight, X, RefreshCw, Sun, Moon, Cloud, Users, CheckCircle, TrendingUp } from 'lucide-react';
+import { Search, Shield, User, Info, ArrowRight, X, RefreshCw, Cloud, Users, CheckCircle, TrendingUp } from 'lucide-react';
 import { 
   owners as initialOwners, 
   payments2025 as initialP25, 
   payments2026 as initialP26 
 } from './data';
 import { Owner, DashboardData, Payment2025, Payment2026 } from './types';
-import { MONTHLY_EXPENSES_2025, Q1_DUE_AMOUNT } from './constants';
-import { fetchAllData, testConnection, debugInfo } from './lib/supabase';
+import { MONTHLY_EXPENSES_2025, Q1_DUE_AMOUNT, MONTHLY_MAINTENANCE_2026 } from './constants';
+import { fetchAllData, testConnection } from './lib/supabase';
 import OwnerDashboard from './components/OwnerDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import Login from './components/Login';
-import DataDebugTable from './components/DataDebugTable';
 
 const App: React.FC = () => {
   const [view, setView] = useState<'landing' | 'owner' | 'admin_login' | 'admin'>('landing');
@@ -22,7 +21,6 @@ const App: React.FC = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isCloudLive, setIsCloudLive] = useState(false);
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [diagnostics, setDiagnostics] = useState<string>('');
   const searchRef = useRef<HTMLDivElement>(null);
 
@@ -31,33 +29,9 @@ const App: React.FC = () => {
   const [p25List, setP25List] = useState<Payment2025[]>(initialP25);
   const [p26List, setP26List] = useState<Payment2026[]>(initialP26);
 
-  // Theme Sync helper
-  const applyTheme = (t: 'dark' | 'light') => {
-    if (t === 'light') {
-      document.body.classList.add('light');
-      document.documentElement.classList.remove('dark');
-    } else {
-      document.body.classList.remove('light');
-      document.documentElement.classList.add('dark');
-    }
-  };
-
-  // Initial Theme Sync
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null;
-    const systemPrefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-    
-    const initialTheme = savedTheme || (systemPrefersLight ? 'light' : 'dark');
-    setTheme(initialTheme);
-    applyTheme(initialTheme);
+    document.documentElement.classList.add('dark');
   }, []);
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    applyTheme(newTheme);
-  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -65,7 +39,6 @@ const App: React.FC = () => {
       let diagLog = '🚀 App initializing...\n';
       
       try {
-        // Test connection
         diagLog += '🧪 Testing Supabase...\n';
         const isConnected = await testConnection();
         
@@ -94,7 +67,6 @@ const App: React.FC = () => {
           diagLog += `📊 P25 payments: ${cloudData.p25?.length || 0} records\n`;
           diagLog += `📊 P26 payments: ${cloudData.p26?.length || 0} records\n`;
           
-          // Warn if payment tables are empty
           if (!cloudData.p25 || cloudData.p25.length === 0) {
             diagLog += `⚠️ WARNING: Collections_2025 table is EMPTY!\n`;
           }
@@ -121,14 +93,12 @@ const App: React.FC = () => {
   useEffect(() => {
     const query = searchQuery.trim().toLowerCase();
     if (query.length > 0) {
-      // Filter based on search query
       const results = owners.filter(o => 
         o.flatNo.toLowerCase().includes(query) || 
         o.name.toLowerCase().includes(query)
       );
       setSearchResults(results);
     } else if (isSearchFocused) {
-      // When focused without query, show all units
       setSearchResults(owners);
     } else {
       setSearchResults([]);
@@ -152,27 +122,26 @@ const App: React.FC = () => {
 
     const normalizedRemarks = remarks.toLowerCase().trim();
     
-    // Check for patterns in order of specificity
     if (normalizedRemarks.includes('till q4 paid') || normalizedRemarks.includes('till q4paid')) {
-      return 'Paid'; // Covers Q1, Q2, Q3, Q4
+      return 'Paid';
     } else if (normalizedRemarks.includes('till q3 paid') || normalizedRemarks.includes('till q3paid')) {
-      return 'Paid'; // Covers Q1, Q2, Q3
+      return 'Paid';
     } else if (normalizedRemarks.includes('till q2 paid') || normalizedRemarks.includes('till q2paid')) {
-      return 'Paid'; // Covers Q1, Q2
+      return 'Paid';
     } else if (normalizedRemarks.includes('till q1 paid') || normalizedRemarks.includes('till q1paid')) {
-      return 'Paid'; // Covers Q1
+      return 'Paid';
     } else if (normalizedRemarks.includes('q4 paid') || normalizedRemarks.includes('q4paid')) {
-      return 'Paid'; // Q4 paid, implies Q1 might be covered too
+      return 'Paid';
     } else if (normalizedRemarks.includes('q3 paid') || normalizedRemarks.includes('q3paid')) {
-      return 'Paid'; // Q3 paid, implies Q1 might be covered too
+      return 'Paid';
     } else if (normalizedRemarks.includes('q2 paid') || normalizedRemarks.includes('q2paid')) {
-      return 'Paid'; // Q2 paid, implies Q1 might be covered too
+      return 'Paid';
     } else if (normalizedRemarks.includes('q1 paid') || normalizedRemarks.includes('q1paid')) {
-      return 'Paid'; // Q1 specifically paid
+      return 'Paid';
     } else if (normalizedRemarks.includes('paid till') || normalizedRemarks.includes('paid till')) {
-      return 'Paid'; // Generic paid till pattern
+      return 'Paid';
     } else if (normalizedRemarks.includes('paid')) {
-      return 'Partial Paid'; // Generic paid mention
+      return 'Partial Paid';
     }
     
     return 'Due';
@@ -189,78 +158,60 @@ const App: React.FC = () => {
   };
 
   const calculateSharedExp2025 = (p25: Payment2025) => {
-    // Determine which month they started paying
-    const monthlyPayments = {
-      aug: p25.aug,
-      sept: p25.sept,
-      oct: p25.oct,
-      nov: p25.nov,
-      dec: p25.dec
-    };
-
+    const monthlyPayments = { aug: p25.aug, sept: p25.sept, oct: p25.oct, nov: p25.nov, dec: p25.dec };
     const monthOrder = ['aug', 'sept', 'oct', 'nov', 'dec'] as const;
-    
-    // Find first month with non-zero payment
     const startMonth = monthOrder.find(month => monthlyPayments[month] > 0);
+    if (!startMonth) return 0;
     
-    if (!startMonth) return 0; // No payments made
-    
-    // Sum monthly expenses from start month onwards
-    const monthExpenses = {
-      aug: 0,
-      sept: 663,
-      oct: 1000,
-      nov: 815,
-      dec: 794
-    };
-    
+    const monthExpenses = { aug: 0, sept: 663, oct: 1000, nov: 815, dec: 794 };
     let totalExpense = 0;
     let countFromStart = false;
-    
     for (const month of monthOrder) {
       if (month === startMonth) countFromStart = true;
       if (countFromStart) {
         totalExpense += monthExpenses[month];
       }
     }
-    
     return totalExpense;
   };
 
   const handleSelectOwner = (owner: Owner) => {
-    const p26 = p26List.find(p => p.flatNo === owner.flatNo) || {
-      flatNo: owner.flatNo, carryForward2025: 0, q1Payment: 0, jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 0, outstanding: 6000
-    };
-    const p25 = p25List.find(p => p.flatNo === owner.flatNo) || {
-      flatNo: owner.flatNo, aug: 0, sept: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 0, outstanding: 0
-    };
+    const p26 = p26List.find(p => p.flatNo === owner.flatNo) || { flatNo: owner.flatNo, carryForward2025: 0, q1Payment: 0, jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 0, outstanding: 6000 };
+    const p25 = p25List.find(p => p.flatNo === owner.flatNo) || { flatNo: owner.flatNo, aug: 0, sept: 0, oct: 0, nov: 0, dec: 0, paidTillDate: 0, outstanding: 0 };
 
     const carryForward = p26.carryForward2025;
     const q1Payment = p26.q1Payment;
     const totalAvailable = carryForward + q1Payment;
-    
     const sharedExp2025 = calculateSharedExp2025(p25);
     const totalPaid2025 = carryForward + sharedExp2025;
     const lifetimePaid = totalPaid2025 + q1Payment;
     
     let q1Status: 'Covered' | 'Partial Covered' | 'Paid' | 'Partial Paid' | 'Due' = 'Due';
     
-    // First, try to determine status from remarks
-    const remarksStatus = calculateQ1StatusFromRemarks(p26.remarks || '');
-    
-    // If remarks indicate a status, use it; otherwise fall back to the original logic
-    if (remarksStatus !== 'Due') {
-      q1Status = remarksStatus;
+    let q1Due = Q1_DUE_AMOUNT;
+    if (p26.remarks && p26.remarks.toLowerCase().includes('n/a for jan')) {
+      q1Due -= MONTHLY_MAINTENANCE_2026;
+    }
+    if (p26.remarks && p26.remarks.toLowerCase().includes('n/a for feb')) {
+      q1Due -= MONTHLY_MAINTENANCE_2026;
+    }
+
+    if (p26.outstanding === Q1_DUE_AMOUNT) {
+      q1Status = 'Due';
     } else {
-      // Original logic as fallback
-      if (q1Payment > 0) {
-        q1Status = 'Paid';
-      } else if (carryForward >= Q1_DUE_AMOUNT) {
-        q1Status = 'Covered';
-      } else if (carryForward > 0) {
-        q1Status = 'Partial Covered';
+      const remarksStatus = calculateQ1StatusFromRemarks(p26.remarks || '');
+      if (remarksStatus !== 'Due') {
+        q1Status = remarksStatus;
       } else {
-        q1Status = 'Due';
+        if (q1Payment > 0) {
+          q1Status = 'Paid';
+        } else if (carryForward >= q1Due) {
+          q1Status = 'Covered';
+        } else if (carryForward > 0) {
+          q1Status = 'Partial Covered';
+        } else {
+          q1Status = 'Due';
+        }
       }
     }
 
@@ -273,7 +224,7 @@ const App: React.FC = () => {
         carryForward,
         q1Status,
         maintenancePaidTillDate: lifetimePaid,
-        currentBalance: totalAvailable - Q1_DUE_AMOUNT
+        currentBalance: totalAvailable - q1Due
       }
     });
     setIsSearchFocused(false);
@@ -291,19 +242,11 @@ const App: React.FC = () => {
 
   return (
     <main className="min-h-screen transition-all duration-500">
-      <button 
-        onClick={toggleTheme}
-        className="fixed top-6 left-6 z-[60] p-3 glass rounded-2xl hover:bg-white/10 transition-all neo-button"
-        title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-      >
-        {theme === 'dark' ? <Sun size={20} className="text-amber-400" /> : <Moon size={20} className="text-indigo-600" />}
-      </button>
-
       {view === 'landing' && (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-700">
           <div className="mb-8 animate-in zoom-in duration-700">
-            <div className="w-20 h-20 glass rounded-[2rem] flex items-center justify-center mx-auto shadow-2xl border-white/20">
-              <Building2 size={40} className="text-indigo-400" />
+            <div className="w-32 h-32 glass rounded-[3rem] flex items-center justify-center mx-auto shadow-2xl border-white/20 p-6">
+              <img src="/1000551042-removebg-preview.png" alt="Hijibiji Logo" className="w-full h-full object-contain" />
             </div>
           </div>
           
@@ -351,7 +294,7 @@ const App: React.FC = () => {
                     onClick={() => handleSelectOwner(owner)}
                     className="w-full p-5 border-b border-white/5 flex items-center justify-start hover:bg-white/10 transition-colors group"
                   >
-                    <div className="flex-1">
+                    <div className="flex-1 text-left">
                       <div className="font-black text-lg group-hover:text-indigo-400 transition-colors">{owner.flatNo}</div>
                       <div className="text-xs text-white/40 font-bold uppercase tracking-wider">{owner.name}</div>
                     </div>
@@ -362,9 +305,7 @@ const App: React.FC = () => {
             )}
           </div>
 
-          {/* KPI Cards */}
           <div className="w-full max-w-md grid grid-cols-3 gap-4 mb-12">
-            {/* Registered Flats */}
             <div className="glass rounded-[1.5rem] p-4 shadow-2xl border-white/10 hover:shadow-xl hover:border-white/20 transition-all group text-center">
               <div className="flex items-center justify-center mb-3">
                 <Users size={20} className="text-indigo-400 group-hover:scale-110 transition-transform" />
@@ -373,7 +314,6 @@ const App: React.FC = () => {
               <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider">Registered Flats</p>
             </div>
 
-            {/* Q1 Paid / Covered */}
             <div className="glass rounded-[1.5rem] p-4 shadow-2xl border-white/10 hover:shadow-xl hover:border-white/20 transition-all group text-center">
               <div className="flex items-center justify-center mb-3">
                 <CheckCircle size={20} className="text-emerald-400 group-hover:scale-110 transition-transform" />
@@ -384,7 +324,6 @@ const App: React.FC = () => {
               <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider">Q1 Paid / Covered</p>
             </div>
 
-            {/* Collection Rate */}
             <div className="glass rounded-[1.5rem] p-4 shadow-2xl border-white/10 hover:shadow-xl hover:border-white/20 transition-all group text-center">
               <div className="flex items-center justify-center mb-3">
                 <TrendingUp size={20} className="text-cyan-400 group-hover:scale-110 transition-transform" />

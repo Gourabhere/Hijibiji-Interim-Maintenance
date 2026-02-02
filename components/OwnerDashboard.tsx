@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { DashboardData } from '../types';
 import { formatCurrency } from '../utils';
+import QrModal from './QrModal';
 
 interface Props {
   data: DashboardData;
@@ -60,36 +61,8 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
   const [selectedYear, setSelectedYear] = useState<2025 | 2026>(2026);
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<MonthDetail | null>(null);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const { owner, p2025, p2026, calculated } = data;
-
-  const getMonthValue2025 = (month: string) => {
-    const participatedIn2025 = p2026.carryForward2025 > 0 || (p2026.paidTillDate > p2026.q1Payment);
-    if (!participatedIn2025) return 0;
-
-    const poolMonths = ['Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    if (!poolMonths.includes(month)) return 0;
-
-    if (owner.possessionDate === 'TBD') return 2000;
-
-    const parts = owner.possessionDate.split('-');
-    if (parts.length < 2) return 0;
-    
-    const posMonthStr = parts[0];
-    const posYearStr = parts[1];
-
-    if (posYearStr !== '25') return 0;
-
-    const allMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const posIndex = allMonths.indexOf(posMonthStr);
-    const currIndex = allMonths.indexOf(month);
-    const poolStartIndex = allMonths.indexOf('Aug');
-
-    const effectiveStart = Math.max(posIndex, poolStartIndex);
-    
-    if (currIndex >= effectiveStart) return 2000;
-    
-    return 0;
-  };
 
   const months2026 = [
     { label: 'Jan', amount: p2026.jan }, { label: 'Feb', amount: p2026.feb },
@@ -104,12 +77,12 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
     { label: 'Jan', amount: 0 }, { label: 'Feb', amount: 0 },
     { label: 'Mar', amount: 0 }, { label: 'Apr', amount: 0 },
     { label: 'May', amount: 0 }, { label: 'Jun', amount: 0 },
-    { label: 'Jul', amount: 0 }, 
-    { label: 'Aug', amount: getMonthValue2025('Aug') },
-    { label: 'Sep', amount: getMonthValue2025('Sep') }, 
-    { label: 'Oct', amount: getMonthValue2025('Oct') },
-    { label: 'Nov', amount: getMonthValue2025('Nov') }, 
-    { label: 'Dec', amount: getMonthValue2025('Dec') },
+    { label: 'Jul', amount: 0 },
+    { label: 'Aug', amount: p2025.aug },
+    { label: 'Sep', amount: p2025.sept },
+    { label: 'Oct', amount: p2025.oct },
+    { label: 'Nov', amount: p2025.nov },
+    { label: 'Dec', amount: p2025.dec },
   ];
 
   const displayMonths = selectedYear === 2026 ? months2026 : months2025;
@@ -213,6 +186,8 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
 
   return (
     <div className="min-h-screen p-4 pb-28 max-w-2xl mx-auto space-y-6 animate-in fade-in duration-500">
+      {isQrModalOpen && <QrModal onClose={() => setIsQrModalOpen(false)} />}
+
       {/* Header */}
       <div className="flex items-center gap-4">
         <button onClick={onBack} className="p-3 glass rounded-2xl hover:bg-white/10 transition-all neo-button">
@@ -302,6 +277,18 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
               </Tooltip>
             </div>
             <div className="text-4xl font-black mb-6">{calculated.q1Status}</div>
+            
+            {['Due', 'Partial Paid'].includes(calculated.q1Status) && (
+              <div className="mt-4 mb-6">
+                <button
+                  onClick={() => setIsQrModalOpen(true)}
+                  className="w-full py-4 bg-gradient-to-r from-cyan-500 to-indigo-500 text-white font-black rounded-2xl transition-all neo-button flex items-center justify-center gap-2"
+                >
+                  <CreditCard size={16} />
+                  Pay Now
+                </button>
+              </div>
+            )}
             
             <div className="grid grid-cols-2 gap-4">
               <div className="p-3 bg-white/10 rounded-2xl border border-white/10 backdrop-blur-md">

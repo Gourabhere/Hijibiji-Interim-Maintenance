@@ -35,6 +35,7 @@ export interface Payment2026 {
   dec: number;
   paidTillDate: number;
   outstanding: number;
+  remarks?: string;
 }
 
 export interface ExpenseRecord {

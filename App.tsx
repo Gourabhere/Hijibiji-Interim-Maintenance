@@ -145,6 +145,49 @@ const App: React.FC = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const calculateQ1StatusFromRemarks = (remarks: string): 'Covered' | 'Partial Covered' | 'Paid' | 'Partial Paid' | 'Due' => {
+    if (!remarks || typeof remarks !== 'string' || remarks.trim() === '') {
+      return 'Due';
+    }
+
+    const normalizedRemarks = remarks.toLowerCase().trim();
+    
+    // Check for patterns in order of specificity
+    if (normalizedRemarks.includes('till q4 paid') || normalizedRemarks.includes('till q4paid')) {
+      return 'Paid'; // Covers Q1, Q2, Q3, Q4
+    } else if (normalizedRemarks.includes('till q3 paid') || normalizedRemarks.includes('till q3paid')) {
+      return 'Paid'; // Covers Q1, Q2, Q3
+    } else if (normalizedRemarks.includes('till q2 paid') || normalizedRemarks.includes('till q2paid')) {
+      return 'Paid'; // Covers Q1, Q2
+    } else if (normalizedRemarks.includes('till q1 paid') || normalizedRemarks.includes('till q1paid')) {
+      return 'Paid'; // Covers Q1
+    } else if (normalizedRemarks.includes('q4 paid') || normalizedRemarks.includes('q4paid')) {
+      return 'Paid'; // Q4 paid, implies Q1 might be covered too
+    } else if (normalizedRemarks.includes('q3 paid') || normalizedRemarks.includes('q3paid')) {
+      return 'Paid'; // Q3 paid, implies Q1 might be covered too
+    } else if (normalizedRemarks.includes('q2 paid') || normalizedRemarks.includes('q2paid')) {
+      return 'Paid'; // Q2 paid, implies Q1 might be covered too
+    } else if (normalizedRemarks.includes('q1 paid') || normalizedRemarks.includes('q1paid')) {
+      return 'Paid'; // Q1 specifically paid
+    } else if (normalizedRemarks.includes('paid till') || normalizedRemarks.includes('paid till')) {
+      return 'Paid'; // Generic paid till pattern
+    } else if (normalizedRemarks.includes('paid')) {
+      return 'Partial Paid'; // Generic paid mention
+    }
+    
+    return 'Due';
+  };
+
+  const calculateQ1PaidCoveredCount = (): number => {
+    return p26List.reduce((count, p26) => {
+      const remarksStatus = calculateQ1StatusFromRemarks(p26.remarks || '');
+      if (remarksStatus === 'Paid' || remarksStatus === 'Covered') {
+        return count + 1;
+      }
+      return count;
+    }, 0);
+  };
+
   const calculateSharedExp2025 = (p25: Payment2025) => {
     // Determine which month they started paying
     const monthlyPayments = {
@@ -202,14 +245,23 @@ const App: React.FC = () => {
     
     let q1Status: 'Covered' | 'Partial Covered' | 'Paid' | 'Partial Paid' | 'Due' = 'Due';
     
-    if (q1Payment > 0) {
-      q1Status = 'Paid';
-    } else if (carryForward >= Q1_DUE_AMOUNT) {
-      q1Status = 'Covered';
-    } else if (carryForward > 0) {
-      q1Status = 'Partial Covered';
+    // First, try to determine status from remarks
+    const remarksStatus = calculateQ1StatusFromRemarks(p26.remarks || '');
+    
+    // If remarks indicate a status, use it; otherwise fall back to the original logic
+    if (remarksStatus !== 'Due') {
+      q1Status = remarksStatus;
     } else {
-      q1Status = 'Due';
+      // Original logic as fallback
+      if (q1Payment > 0) {
+        q1Status = 'Paid';
+      } else if (carryForward >= Q1_DUE_AMOUNT) {
+        q1Status = 'Covered';
+      } else if (carryForward > 0) {
+        q1Status = 'Partial Covered';
+      } else {
+        q1Status = 'Due';
+      }
     }
 
     setSelectedOwnerData({
@@ -297,13 +349,13 @@ const App: React.FC = () => {
                   <button 
                     key={owner.flatNo}
                     onClick={() => handleSelectOwner(owner)}
-                    className="w-full p-5 border-b border-white/5 flex items-center justify-between hover:bg-white/10 transition-colors group"
+                    className="w-full p-5 border-b border-white/5 flex items-center justify-start hover:bg-white/10 transition-colors group"
                   >
-                    <div>
+                    <div className="flex-1">
                       <div className="font-black text-lg group-hover:text-indigo-400 transition-colors">{owner.flatNo}</div>
                       <div className="text-xs text-white/40 font-bold uppercase tracking-wider">{owner.name}</div>
                     </div>
-                    <ArrowRight size={18} className="text-white/20 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
+                    <ArrowRight size={18} className="text-white/20 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all flex-shrink-0" />
                   </button>
                 ))}
               </div>
@@ -327,7 +379,7 @@ const App: React.FC = () => {
                 <CheckCircle size={20} className="text-emerald-400 group-hover:scale-110 transition-transform" />
               </div>
               <div className="text-2xl font-black text-white mb-2">
-                {p26List.filter(p => (p.q1Payment || 0) >= 6000).length}
+                {calculateQ1PaidCoveredCount()}
               </div>
               <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider">Q1 Paid / Covered</p>
             </div>
@@ -338,8 +390,8 @@ const App: React.FC = () => {
                 <TrendingUp size={20} className="text-cyan-400 group-hover:scale-110 transition-transform" />
               </div>
               <div className="text-2xl font-black text-white mb-2">
-                {owners.length > 0 
-                  ? ((p26List.filter(p => (p.q1Payment || 0) >= 6000).length / owners.length) * 100).toFixed(1)
+                {owners.length > 0
+                  ? ((calculateQ1PaidCoveredCount() / owners.length) * 100).toFixed(1)
                   : '0'
                 }%
               </div>

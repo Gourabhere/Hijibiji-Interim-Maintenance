@@ -334,7 +334,8 @@ export const fetchAllData = async () => {
         nov: cleanAmount(detectColumn(p, 'November_2026', 'november_2026', 'November', 'november')),
         dec: cleanAmount(detectColumn(p, 'December_2026', 'december_2026', 'December', 'december')),
         paidTillDate: cleanAmount(detectColumn(p, 'Paid_Till_Date', 'paid_till_date')),
-        outstanding: cleanAmount(detectColumn(p, 'Outstanding', 'outstanding'))
+        outstanding: cleanAmount(detectColumn(p, 'Outstanding', 'outstanding')),
+        remarks: detectColumn(p, 'Remarks', 'remarks', 'REMARKS') || ''
       };
       if (idx === 0) {
         console.log('✅ Collections_2026 first record mapped:', mapped);

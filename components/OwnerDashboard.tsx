@@ -162,14 +162,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
   const getNotifications = () => {
     const notif = [];
     
-    if (calculated.q1Status === 'Covered' && selectedYear === 2026) {
-      notif.push({
-        type: 'success',
-        icon: '✓',
-        title: 'Q1 Fully Paid',
-        message: 'Your carry forward covers March. No further action needed.'
-      });
-    } else if (calculated.q1Status === 'Partial Covered' && selectedYear === 2026) {
+    if (calculated.q1Status === 'Partial Covered' && selectedYear === 2026) {
       notif.push({
         type: 'warning',
         icon: '⚠',
@@ -194,14 +187,6 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
       });
     }
 
-    if (selectedYear === 2026 && monthsCovered > 0 && monthsCovered < totalMonths) {
-      notif.push({
-        type: 'neutral',
-        icon: '○',
-        title: 'Upcoming Payments',
-        message: `${totalMonths - monthsCovered} month(s) remaining in 2026.`
-      });
-    }
 
     return notif;
   };

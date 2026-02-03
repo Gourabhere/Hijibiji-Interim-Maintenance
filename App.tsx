@@ -9,7 +9,7 @@ import {
 import { Owner, DashboardData, Payment2025, Payment2026 } from './types';
 import { MONTHLY_EXPENSES_2025, Q1_DUE_AMOUNT, MONTHLY_MAINTENANCE_2026 } from './constants';
 import { fetchAllData, testConnection } from './lib/supabase';
-import { calculateSharedExp2025, calculateLifetimePaid } from './lib/utils';
+import { calculateLifetimePaid } from './lib/utils';
 import OwnerDashboard from './components/OwnerDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import Login from './components/Login';
@@ -272,7 +272,8 @@ const App: React.FC = () => {
     const carryForward = p26.carryForward2025;
     const q1Payment = p26.q1Payment;
     const totalAvailable = carryForward + q1Payment;
-    const sharedExp2025 = calculateSharedExp2025(p25, expenses2025, expenseReport);
+    // Use pre-fetched 2025 Shared Expense from Excess_Amount_2025 table
+    const sharedExp2025 = p26.sharedExp2025 || 0;
 
     // Updated Logic: Lifetime Paid = 2025 Payments + 2026 Q1 Payment
     // const totalPaid2025 = carryForward + sharedExp2025; // Legacy logic removed

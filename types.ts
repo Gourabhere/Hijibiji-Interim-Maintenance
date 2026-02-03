@@ -15,6 +15,7 @@ export interface Payment2025 {
   dec: number;
   paidTillDate: number;
   outstanding: number;
+  sharedExp2025?: number;
 }
 
 export interface Payment2026 {
@@ -38,6 +39,7 @@ export interface Payment2026 {
   remarks?: string;
   janExempt?: boolean;
   febExempt?: boolean;
+  sharedExp2025?: number;
 }
 
 export interface ExpenseRecord {

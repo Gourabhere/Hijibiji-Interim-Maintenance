@@ -121,7 +121,7 @@ const DataDebugTable: React.FC<Props> = ({ owners, p25List, p26List, expenses202
               {sortedOwners.map((owner) => {
                 const p25 = p25List.find(p => p.flatNo === owner.flatNo);
                 const p26 = p26List.find(p => p.flatNo === owner.flatNo);
-                const sharedExp2025 = p25 ? calculateSharedExp2025(p25, expenses2025 || {}, expenseReport || []) : 0;
+                const sharedExp2025 = p25?.sharedExp2025 || 0;
 
                 const isNaN25 = !p25 || (isNaN(p25.aug) && isNaN(p25.sept) && isNaN(p25.oct));
                 const isNaN26 = !p26 || (isNaN(p26.jan) && isNaN(p26.feb) && isNaN(p26.mar));

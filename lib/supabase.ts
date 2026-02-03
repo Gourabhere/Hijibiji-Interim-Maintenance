@@ -321,6 +321,21 @@ export const fetchAllData = async () => {
       console.warn('⚠️ Collections_2026 has NO data!');
     }
 
+    // Build excess maps
+    const excessMap: Record<string, number> = {};
+    const sharedExp2025Map: Record<string, number> = {};
+    (excessRaw || []).forEach(e => {
+      const flatNo = detectColumn(e, 'Flat_No', 'flat_no', 'Flat No');
+      const carryFwd = detectColumn(e, 'Carry_Forward_to_2026', 'carry_forward_to_2026');
+      const sharedExp = detectColumn(e, 'Expense_borne_by_each_Owner', 'expense_borne_by_each_owner', 'Expense borne by each Owner');
+
+      if (flatNo) {
+        excessMap[flatNo] = cleanAmount(carryFwd);
+        sharedExp2025Map[flatNo] = cleanAmount(sharedExp);
+      }
+    });
+    console.log('📊 Maps built for', Object.keys(excessMap).length, 'flats');
+
     // Map Registered_Owner_Details - auto-detect columns
     const owners = (ownersFullRaw || []).map(o => ({
       sn: detectColumn(o, 'SN', 'sn', 'Sn') || 0,
@@ -339,7 +354,8 @@ export const fetchAllData = async () => {
         nov: cleanAmount(detectColumn(p, 'Nov_2025', 'nov_2025', 'Nov', 'nov')),
         dec: cleanAmount(detectColumn(p, 'Dec_2025', 'dec_2025', 'Dec', 'dec')),
         paidTillDate: cleanAmount(detectColumn(p, 'Total_Paid_in_2025', 'total_paid_in_2025')),
-        outstanding: cleanAmount(detectColumn(p, 'Outstanding_in_2025', 'outstanding_in_2025'))
+        outstanding: cleanAmount(detectColumn(p, 'Outstanding_in_2025', 'outstanding_in_2025')),
+        sharedExp2025: sharedExp2025Map[detectColumn(p, 'Flat_No', 'flat_no', 'Flat No', 'flat no') || ''] || 0
       };
       if (idx === 0) {
         console.log('✅ Collections_2025 first record mapped:', mapped);
@@ -347,15 +363,6 @@ export const fetchAllData = async () => {
       }
       return mapped;
     });
-
-    // Build excess map
-    const excessMap: Record<string, number> = {};
-    (excessRaw || []).forEach(e => {
-      const flatNo = detectColumn(e, 'Flat_No', 'flat_no', 'Flat No');
-      const carryFwd = detectColumn(e, 'Carry_Forward_to_2026', 'carry_forward_to_2026');
-      if (flatNo) excessMap[flatNo] = cleanAmount(carryFwd);
-    });
-    console.log('📊 Excess Map built for', Object.keys(excessMap).length, 'flats');
 
     // Map Collections_2026 - auto-detect columns
     const p26 = (p26Raw || []).map((p, idx) => {
@@ -381,7 +388,8 @@ export const fetchAllData = async () => {
         janExempt: (typeof detectColumn(p, 'January_2026', 'january_2026', 'January', 'january') === 'string' &&
           detectColumn(p, 'January_2026', 'january_2026', 'January', 'january').toLowerCase().includes('n/a')),
         febExempt: (typeof detectColumn(p, 'February_2026', 'february_2026', 'February', 'february') === 'string' &&
-          detectColumn(p, 'February_2026', 'february_2026', 'February', 'february').toLowerCase().includes('n/a'))
+          detectColumn(p, 'February_2026', 'february_2026', 'February', 'february').toLowerCase().includes('n/a')),
+        sharedExp2025: sharedExp2025Map[detectColumn(p, 'Flat_No', 'flat_no', 'Flat No') || ''] || 0
       };
 
       // EXCEPTION: Exempted Flats Logic for 1A3 and 1E1

@@ -36,6 +36,8 @@ export interface Payment2026 {
   paidTillDate: number;
   outstanding: number;
   remarks?: string;
+  janExempt?: boolean;
+  febExempt?: boolean;
 }
 
 export interface ExpenseRecord {
@@ -47,10 +49,28 @@ export interface ExpenseRecord {
   dec: number;
 }
 
+export interface ExpenseReportItem {
+  month: string;
+  amount: number;
+  // Dynamic keys might exist, so we accept loose typing or specific fields if known
+  [key: string]: any;
+}
+
+export interface MaintenanceConfig {
+  key: string;
+  value: any;
+  description?: string;
+}
+
 export interface DashboardData {
   owner: Owner;
   p2025: Payment2025;
   p2026: Payment2026;
+  expenses2025: Record<string, number>;
+  config: {
+    q1Due: number;
+    monthlyMaintenance2026: number;
+  };
   calculated: {
     expenseShare2025: number;
     carryForward: number;

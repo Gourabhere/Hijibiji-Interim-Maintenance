@@ -1,10 +1,13 @@
 
+// ------------------------------------------------------------
+// DEFAULT / FALLBACK VALUES (Used when Supabase config is offline)
+// ------------------------------------------------------------
 export const MONTHLY_EXPENSES_2025 = {
   aug: 0,
-  sep: 663,
-  oct: 1000,
-  nov: 815,
-  dec: 794
+  sep: 0,
+  oct: 0,
+  nov: 0,
+  dec: 0
 };
 
 export const SOCIETY_NAME = "Hijibiji Society";

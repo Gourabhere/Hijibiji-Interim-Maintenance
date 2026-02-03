@@ -1,56 +1,22 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Owner, Payment2025, Payment2026 } from '../types';
+import { calculateSharedExp2025, getMonthlyExpenseBreakdown } from '../lib/utils';
 
 interface Props {
   owners: Owner[];
   p25List: Payment2025[];
   p26List: Payment2026[];
+  expenses2025?: Record<string, number>;
+  expenseReport?: any[];
 }
 
-const DataDebugTable: React.FC<Props> = ({ owners, p25List, p26List }) => {
+const DataDebugTable: React.FC<Props> = ({ owners, p25List, p26List, expenses2025, expenseReport }) => {
   const [expanded, setExpanded] = useState(false);
   const [sortBy, setSortBy] = useState<'flatNo' | 'name'>('flatNo');
 
-  // Helper function to calculate 2025 Shared Expense
-  const calculateSharedExp2025 = (p25: Payment2025) => {
-    // Determine which month they started paying
-    const monthlyPayments = {
-      aug: p25.aug,
-      sept: p25.sept,
-      oct: p25.oct,
-      nov: p25.nov,
-      dec: p25.dec
-    };
-
-    const monthOrder = ['aug', 'sept', 'oct', 'nov', 'dec'] as const;
-    
-    // Find first month with non-zero payment
-    const startMonth = monthOrder.find(month => monthlyPayments[month] > 0);
-    
-    if (!startMonth) return 0; // No payments made
-    
-    // Sum monthly expenses from start month onwards
-    const monthExpenses = {
-      aug: 0,
-      sept: 663,
-      oct: 1000,
-      nov: 815,
-      dec: 794
-    };
-    
-    let totalExpense = 0;
-    let countFromStart = false;
-    
-    for (const month of monthOrder) {
-      if (month === startMonth) countFromStart = true;
-      if (countFromStart) {
-        totalExpense += monthExpenses[month];
-      }
-    }
-    
-    return totalExpense;
-  };
+  // Calculate monthly rates for display
+  const monthlyRates = getMonthlyExpenseBreakdown(expenses2025 || {}, expenseReport || []);
 
   const sortedOwners = [...owners].sort((a, b) => {
     if (sortBy === 'flatNo') return a.flatNo.localeCompare(b.flatNo);
@@ -59,6 +25,23 @@ const DataDebugTable: React.FC<Props> = ({ owners, p25List, p26List }) => {
 
   return (
     <div className="w-full max-w-7xl">
+      {/* Monthly Expense Rates Summary */}
+      <div className="mb-6 p-4 bg-indigo-500/10 border border-indigo-500/30 rounded-2xl">
+        <h3 className="text-indigo-300 text-sm font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-indigo-400"></span>
+          Monthly Expense Rates (2025)
+        </h3>
+        <div className="grid grid-cols-5 gap-4">
+          {Object.entries(monthlyRates).map(([month, amount]) => (
+            <div key={month} className="bg-black/20 p-3 rounded-lg border border-white/5">
+              <div className="text-white/50 text-xs uppercase font-bold mb-1">{month}</div>
+              <div className="text-white font-mono text-lg font-bold">₹{amount}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+
       {/* Collapsed Header */}
       <button
         onClick={() => setExpanded(!expanded)}
@@ -84,7 +67,7 @@ const DataDebugTable: React.FC<Props> = ({ owners, p25List, p26List }) => {
               <div className="text-red-400 font-bold text-sm">🚨 No Payment Data Available</div>
               <div className="text-red-300/80 text-xs mt-2">
                 Both Collections_2025 and Collections_2026 tables appear to be empty in the Supabase database.
-                <br/>
+                <br />
                 Please populate these tables with payment data to see amounts in this table.
               </div>
             </div>
@@ -94,21 +77,19 @@ const DataDebugTable: React.FC<Props> = ({ owners, p25List, p26List }) => {
             <label className="text-sm text-white/70 font-medium">Sort by:</label>
             <button
               onClick={() => setSortBy('flatNo')}
-              className={`px-4 py-2 rounded-lg transition-all ${
-                sortBy === 'flatNo'
-                  ? 'bg-indigo-500/50 border border-indigo-400 text-white'
-                  : 'bg-white/5 border border-white/10 text-white/70 hover:bg-white/10'
-              }`}
+              className={`px-4 py-2 rounded-lg transition-all ${sortBy === 'flatNo'
+                ? 'bg-indigo-500/50 border border-indigo-400 text-white'
+                : 'bg-white/5 border border-white/10 text-white/70 hover:bg-white/10'
+                }`}
             >
               Flat No
             </button>
             <button
               onClick={() => setSortBy('name')}
-              className={`px-4 py-2 rounded-lg transition-all ${
-                sortBy === 'name'
-                  ? 'bg-indigo-500/50 border border-indigo-400 text-white'
-                  : 'bg-white/5 border border-white/10 text-white/70 hover:bg-white/10'
-              }`}
+              className={`px-4 py-2 rounded-lg transition-all ${sortBy === 'name'
+                ? 'bg-indigo-500/50 border border-indigo-400 text-white'
+                : 'bg-white/5 border border-white/10 text-white/70 hover:bg-white/10'
+                }`}
             >
               Name
             </button>
@@ -140,7 +121,7 @@ const DataDebugTable: React.FC<Props> = ({ owners, p25List, p26List }) => {
               {sortedOwners.map((owner) => {
                 const p25 = p25List.find(p => p.flatNo === owner.flatNo);
                 const p26 = p26List.find(p => p.flatNo === owner.flatNo);
-                const sharedExp2025 = p25 ? calculateSharedExp2025(p25) : 0;
+                const sharedExp2025 = p25 ? calculateSharedExp2025(p25, expenses2025 || {}, expenseReport || []) : 0;
 
                 const isNaN25 = !p25 || (isNaN(p25.aug) && isNaN(p25.sept) && isNaN(p25.oct));
                 const isNaN26 = !p26 || (isNaN(p26.jan) && isNaN(p26.feb) && isNaN(p26.mar));

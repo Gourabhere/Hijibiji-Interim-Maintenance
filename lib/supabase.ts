@@ -54,23 +54,23 @@ if (typeof window !== 'undefined') {
 export const testConnection = async () => {
   try {
     console.log('🧪 Testing Supabase connection...');
-    
+
     // First test: just authenticate
     console.log('  → Checking auth...');
     const { data: authData, error: authError } = await supabase.auth.getSession();
     if (authError) console.warn('    Auth check:', authError);
     console.log('    Session:', authData?.session ? 'Active' : 'Anon');
-    
+
     // Test each table and show column names
-    const tables = ['Registered_Owner_Details', 'Collections_2025', 'Collections_2026', 'Excess_Amount_2025'];
-    
+    const tables = ['Registered_Owner_Details', 'Collections_2025', 'Collections_2026', 'Maintenance_Config'];
+
     for (const tableName of tables) {
       console.log(`\n  → Testing table: ${tableName}`);
       const { data: tableData, error: tableError, status } = await supabase
         .from(tableName)
         .select('*')
         .limit(1);
-      
+
       if (tableError) {
         console.error(`    ❌ Error accessing ${tableName}:`, tableError.message);
       } else if (tableData && tableData.length > 0) {
@@ -82,7 +82,7 @@ export const testConnection = async () => {
         console.warn(`    ⚠️ Table exists but has no data`);
       }
     }
-    
+
     console.log('\n✅ Connection and diagnostics complete!');
     return true;
   } catch (err: any) {
@@ -98,30 +98,30 @@ export const testConnection = async () => {
 export const fetchAllData = async () => {
   try {
     console.log('📥 Starting data fetch from Supabase...');
-    
+
     // Fetch from Registered_Owner_Details - try with wildcard first to see all columns
     console.log('Fetching Registered_Owner_Details (discovering columns)...');
     const { data: ownersRaw, error: ownersError } = await supabase
       .from('Registered_Owner_Details')
       .select('*')
       .limit(1);
-    
+
     if (ownersError) {
       console.error('❌ Owners fetch error:', ownersError);
       return null;
     }
-    
+
     if (ownersRaw && ownersRaw.length > 0) {
       const columns = Object.keys(ownersRaw[0]);
       console.log('✅ Owners table columns:', columns.join(', '));
       console.log('   Sample record:', ownersRaw[0]);
     }
-    
+
     // Now fetch all owners
     const { data: ownersFullRaw, error: ownersFullError } = await supabase
       .from('Registered_Owner_Details')
       .select('*');
-    
+
     if (ownersFullError) {
       console.error('❌ Full owners fetch error:', ownersFullError);
       return null;
@@ -132,39 +132,39 @@ export const fetchAllData = async () => {
     const { data: p25Raw, error: p25Error } = await supabase
       .from('Collections_2025')
       .select('*');
-    
+
     if (p25Error) {
       console.error('❌ Collections_2025 fetch error:', p25Error);
       return null;
     }
     console.log('✅ Collections_2025 fetched:', p25Raw?.length || 0, 'records');
-    
+
     if (p25Raw && p25Raw.length > 0) {
       console.log('📊 Collections_2025 columns:', Object.keys(p25Raw[0]).join(', '));
       console.log('📊 Collections_2025 FIRST RECORD (RAW):', JSON.stringify(p25Raw[0], null, 2));
       debugInfo.p25Sample = p25Raw[0];
       debugInfo.p25Columns = Object.keys(p25Raw[0]);
     }
-    
+
     // Fetch from Collections_2026
     console.log('Fetching Collections_2026 (discovering columns)...');
     const { data: p26Raw, error: p26Error } = await supabase
       .from('Collections_2026')
       .select('*');
-    
+
     if (p26Error) {
       console.error('❌ Collections_2026 fetch error:', p26Error);
       return null;
     }
     console.log('✅ Collections_2026 fetched:', p26Raw?.length || 0, 'records');
-    
+
     if (p26Raw && p26Raw.length > 0) {
       console.log('📊 Collections_2026 columns:', Object.keys(p26Raw[0]).join(', '));
       console.log('📊 Collections_2026 FIRST RECORD (RAW):', JSON.stringify(p26Raw[0], null, 2));
       debugInfo.p26Sample = p26Raw[0];
       debugInfo.p26Columns = Object.keys(p26Raw[0]);
     }
-    
+
     // Fetch from Excess_Amount_2025
     console.log('Fetching Excess_Amount_2025...');
     const { data: excessRaw, error: excessError } = await supabase
@@ -175,7 +175,49 @@ export const fetchAllData = async () => {
       console.error('❌ Excess_Amount_2025 fetch error:', excessError);
       // Don't fail - this table is optional
     } else {
-      console.log('✅ Excess_Amount_2025 fetched:', excessRaw?.length || 0, 'records');
+    }
+
+    // Fetch Expense_report_2025
+    console.log('Fetching Expense_report_2025...');
+    const { data: expenseReportRaw, error: expenseReportError } = await supabase
+      .from('Expense_report_2025')
+      .select('*');
+
+    if (expenseReportError) {
+      console.error('❌ Expense_report_2025 fetch error:', expenseReportError);
+    } else if (expenseReportRaw && expenseReportRaw.length > 0) {
+      console.log('✅ Expense_report_2025 fetched:', expenseReportRaw.length, 'records');
+      console.log('📊 Expense_Report Columns:', Object.keys(expenseReportRaw[0]));
+      console.log('   Sample:', expenseReportRaw[0]);
+    }
+
+    // Fetch Maintenance_Config
+    console.log('Fetching Maintenance_Config...');
+    const { data: configRaw, error: configError } = await supabase
+      .from('Maintenance_Config')
+      .select('*');
+
+    let expenses2025 = { aug: 0, sep: 0, oct: 0, nov: 0, dec: 0 }; // Default Fallback
+    let config = { q1Due: 6000, monthlyMaintenance2026: 2000 }; // Default Fallback
+
+    if (configError) {
+      console.warn('⚠️ Could not fetch Maintenance_Config (likely doesn\'t exist yet). Using defaults.');
+    } else if (configRaw) {
+      console.log('✅ Maintenance_Config fetched:', configRaw.length, 'records');
+      const expensesRow = configRaw.find((r: any) => r.key === 'expenses_2025');
+      if (expensesRow?.value) {
+        expenses2025 = expensesRow.value;
+        console.log('   Loaded 2025 Expenses:', expenses2025);
+      }
+
+      const generalRow = configRaw.find((r: any) => r.key === 'general_config');
+      if (generalRow?.value) {
+        config = {
+          q1Due: generalRow.value.q1_due_amount || 6000,
+          monthlyMaintenance2026: generalRow.value.monthly_maintenance_2026 || 2000
+        };
+        console.log('   Loaded General Config:', config);
+      }
     }
 
     if (!ownersFullRaw || !p25Raw || !p26Raw) {
@@ -189,7 +231,7 @@ export const fetchAllData = async () => {
     } else {
       console.log('✅ Collections_2025 has data for', p25Raw.length, 'records');
     }
-    
+
     if (p26Raw.length === 0) {
       console.warn('⚠️ Collections_2026 is EMPTY - no payment records in database!');
     } else {
@@ -204,7 +246,7 @@ export const fetchAllData = async () => {
           return obj[name];
         }
       }
-      
+
       // If no exact match, try case-insensitive search
       if (obj) {
         const objKeys = Object.keys(obj);
@@ -218,25 +260,25 @@ export const fetchAllData = async () => {
           }
         }
       }
-      
+
       return null;
     };
 
     // Helper function to clean and convert amount values
     const cleanAmount = (value: any): number => {
       if (value === null || value === undefined) return 0;
-      
+
       // If already a number, return as is
       if (typeof value === 'number') return Number(value);
-      
+
       // Convert to string and remove commas, then parse
       const strValue = String(value).trim();
       const cleanValue = strValue.replace(/,/g, '');
       const numValue = Number(cleanValue);
-      
+
       return isNaN(numValue) ? 0 : numValue;
     };
-    
+
     // Auto-detect columns by analyzing first record's numeric values
     const autoDetectAmountColumns = (sample: any, expectedCount: number) => {
       const numericCols = Object.entries(sample)
@@ -245,7 +287,7 @@ export const fetchAllData = async () => {
           return !isNaN(num) && key.toLowerCase() !== 'flatno' && key.toLowerCase() !== 'flat_no' && key.toLowerCase() !== 'sn';
         })
         .map(([key]) => key);
-      
+
       console.log(`📊 Found ${numericCols.length} numeric columns: ${numericCols.join(', ')}`);
       return numericCols;
     };
@@ -256,7 +298,7 @@ export const fetchAllData = async () => {
       debugInfo.p25Columns = Object.keys(p25Raw[0]);
       console.log('📊 Collections_2025 sample record:', p25Raw[0]);
       console.log('   Available columns:', Object.keys(p25Raw[0]).join(', '));
-      
+
       // Log to window for debugging
       if (typeof window !== 'undefined') {
         (window as any).p25SampleDebug = p25Raw[0];
@@ -264,13 +306,13 @@ export const fetchAllData = async () => {
     } else {
       console.warn('⚠️ Collections_2025 has NO data!');
     }
-    
+
     if (p26Raw && p26Raw.length > 0) {
       debugInfo.p26Sample = p26Raw[0];
       debugInfo.p26Columns = Object.keys(p26Raw[0]);
       console.log('📊 Collections_2026 sample record:', p26Raw[0]);
       console.log('   Available columns:', Object.keys(p26Raw[0]).join(', '));
-      
+
       // Log to window for debugging
       if (typeof window !== 'undefined') {
         (window as any).p26SampleDebug = p26Raw[0];
@@ -334,9 +376,21 @@ export const fetchAllData = async () => {
         nov: cleanAmount(detectColumn(p, 'November_2026', 'november_2026', 'November', 'november')),
         dec: cleanAmount(detectColumn(p, 'December_2026', 'december_2026', 'December', 'december')),
         paidTillDate: cleanAmount(detectColumn(p, 'Paid_Till_Date', 'paid_till_date')),
-        outstanding: cleanAmount(detectColumn(p, 'Outstanding', 'outstanding')),
-        remarks: detectColumn(p, 'Remarks', 'remarks', 'REMARKS') || ''
+        outstanding: cleanAmount(detectColumn(p, 'Outstanding_in_2026', 'Outstanding', 'outstanding')),
+        remarks: detectColumn(p, 'Remarks', 'remarks', 'REMARKS') || '',
+        janExempt: (typeof detectColumn(p, 'January_2026', 'january_2026', 'January', 'january') === 'string' &&
+          detectColumn(p, 'January_2026', 'january_2026', 'January', 'january').toLowerCase().includes('n/a')),
+        febExempt: (typeof detectColumn(p, 'February_2026', 'february_2026', 'February', 'february') === 'string' &&
+          detectColumn(p, 'February_2026', 'february_2026', 'February', 'february').toLowerCase().includes('n/a'))
       };
+
+      // EXCEPTION: Exempted Flats Logic for 1A3 and 1E1
+      // Force outstanding to 0 regardless of DB value
+      const exemptedFlats = ['1A3', '1E1'];
+      if (exemptedFlats.includes(mapped.flatNo)) {
+        mapped.outstanding = 0;
+      }
+
       if (idx === 0) {
         console.log('✅ Collections_2026 first record mapped:', mapped);
         console.log('   Raw record was:', p);
@@ -352,7 +406,7 @@ export const fetchAllData = async () => {
       averageP26Amount: p26.length > 0 ? (p26.reduce((sum, p) => sum + (p.jan + p.feb + p.mar + p.apr + p.may + p.jun + p.jul + p.aug + p.sep + p.oct + p.nov + p.dec), 0) / p26.length / 12).toFixed(2) : 'N/A'
     });
 
-    return { owners, p25, p26 };
+    return { owners, p25, p26, expenses2025, config, expenseReport: expenseReportRaw || [] };
   } catch (err) {
     console.error('❌ Supabase operation failed:', err);
     return null;

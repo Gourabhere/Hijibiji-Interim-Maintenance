@@ -1,14 +1,15 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Shield, User, Info, ArrowRight, X, RefreshCw, Cloud, Users, CheckCircle, TrendingUp } from 'lucide-react';
-import { 
-  owners as initialOwners, 
-  payments2025 as initialP25, 
-  payments2026 as initialP26 
+import {
+  owners as initialOwners,
+  payments2025 as initialP25,
+  payments2026 as initialP26
 } from './data';
 import { Owner, DashboardData, Payment2025, Payment2026 } from './types';
 import { MONTHLY_EXPENSES_2025, Q1_DUE_AMOUNT, MONTHLY_MAINTENANCE_2026 } from './constants';
 import { fetchAllData, testConnection } from './lib/supabase';
+import { calculateSharedExp2025, calculateLifetimePaid } from './lib/utils';
 import OwnerDashboard from './components/OwnerDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import Login from './components/Login';
@@ -29,6 +30,14 @@ const App: React.FC = () => {
   const [p25List, setP25List] = useState<Payment2025[]>(initialP25);
   const [p26List, setP26List] = useState<Payment2026[]>(initialP26);
 
+  // State for dynamic config
+  const [expenses2025, setExpenses2025] = useState(MONTHLY_EXPENSES_2025);
+  const [expenseReport, setExpenseReport] = useState<any[]>([]); // New expense report state
+  const [appConfig, setAppConfig] = useState({
+    q1Due: Q1_DUE_AMOUNT,
+    monthlyMaintenance2026: MONTHLY_MAINTENANCE_2026
+  });
+
   useEffect(() => {
     document.documentElement.classList.add('dark');
   }, []);
@@ -37,43 +46,57 @@ const App: React.FC = () => {
     const loadData = async () => {
       setIsLoading(true);
       let diagLog = '🚀 App initializing...\n';
-      
+
       try {
         diagLog += '🧪 Testing Supabase...\n';
         const isConnected = await testConnection();
-        
+
         if (!isConnected) {
           diagLog += '❌ Connection failed - using fallback\n';
           setDiagnostics(diagLog);
           setIsLoading(false);
           return;
         }
-        
+
         diagLog += '✅ Connection OK\n';
         diagLog += '📥 Fetching data...\n';
-        
-        const timeoutPromise = new Promise((_, reject) => 
+
+        const timeoutPromise = new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Fetch timeout')), 4000)
         );
 
         const cloudData = await Promise.race([fetchAllData(), timeoutPromise]) as any;
-        
+
         if (cloudData && cloudData.owners?.length > 0) {
           setOwners(cloudData.owners);
           setP25List(cloudData.p25 || []);
           setP26List(cloudData.p26 || []);
+
+          if (cloudData.expenses2025) {
+            setExpenses2025(cloudData.expenses2025);
+            diagLog += `💰 Expenses: Loaded custom 2025 rates\n`;
+          }
+          if (cloudData.expenseReport) {
+            setExpenseReport(cloudData.expenseReport);
+            diagLog += ` Report: Loaded ${cloudData.expenseReport.length} records\n`;
+          }
+          if (cloudData.config) {
+            setAppConfig(cloudData.config);
+            diagLog += `⚙️ Config: Loaded dynamic settings\n`;
+          }
+
           setIsCloudLive(true);
           diagLog += `✅ Loaded ${cloudData.owners.length} units\n`;
           diagLog += `📊 P25 payments: ${cloudData.p25?.length || 0} records\n`;
           diagLog += `📊 P26 payments: ${cloudData.p26?.length || 0} records\n`;
-          
+
           if (!cloudData.p25 || cloudData.p25.length === 0) {
             diagLog += `⚠️ WARNING: Collections_2025 table is EMPTY!\n`;
           }
           if (!cloudData.p26 || cloudData.p26.length === 0) {
             diagLog += `⚠️ WARNING: Collections_2026 table is EMPTY!\n`;
           }
-          
+
           console.log('✅ Successfully loaded data from Supabase');
         } else {
           diagLog += '⚠️ No data from cloud - using fallback\n';
@@ -93,8 +116,8 @@ const App: React.FC = () => {
   useEffect(() => {
     const query = searchQuery.trim().toLowerCase();
     if (query.length > 0) {
-      const results = owners.filter(o => 
-        o.flatNo.toLowerCase().includes(query) || 
+      const results = owners.filter(o =>
+        o.flatNo.toLowerCase().includes(query) ||
         o.name.toLowerCase().includes(query)
       );
       setSearchResults(results);
@@ -121,7 +144,7 @@ const App: React.FC = () => {
     }
 
     const normalizedRemarks = remarks.toLowerCase().trim();
-    
+
     if (normalizedRemarks.includes('till q4 paid') || normalizedRemarks.includes('till q4paid')) {
       return 'Paid';
     } else if (normalizedRemarks.includes('till q3 paid') || normalizedRemarks.includes('till q3paid')) {
@@ -143,7 +166,7 @@ const App: React.FC = () => {
     } else if (normalizedRemarks.includes('paid')) {
       return 'Partial Paid';
     }
-    
+
     return 'Due';
   };
 
@@ -157,19 +180,86 @@ const App: React.FC = () => {
     }, 0);
   };
 
-  const calculateSharedExp2025 = (p25: Payment2025) => {
+  const _unused_calculateSharedExp2025 = (p25: Payment2025) => {
+    // 1. Determine Start Month (first non-zero payment)
     const monthlyPayments = { aug: p25.aug, sept: p25.sept, oct: p25.oct, nov: p25.nov, dec: p25.dec };
     const monthOrder = ['aug', 'sept', 'oct', 'nov', 'dec'] as const;
     const startMonth = monthOrder.find(month => monthlyPayments[month] > 0);
+
     if (!startMonth) return 0;
-    
-    const monthExpenses = { aug: 0, sept: 663, oct: 1000, nov: 815, dec: 794 };
+
+    // 2. If we have the new Expense Report data, use it
+    if (expenseReport && expenseReport.length > 0) {
+      let total = 0;
+      let countFromStart = false;
+
+      // Map app months to likely report month names
+      const monthMap: Record<string, string[]> = {
+        'aug': ['aug', 'august'],
+        'sept': ['sep', 'sept', 'september'],
+        'oct': ['oct', 'october'],
+        'nov': ['nov', 'november'],
+        'dec': ['dec', 'december']
+      };
+
+      for (const month of monthOrder) {
+        if (month === startMonth) countFromStart = true;
+
+        if (countFromStart) {
+          // Find record for this month
+          const reportRow = expenseReport.find(r => {
+            const rMonth = (r.Month || r.month || '').toLowerCase();
+            return monthMap[month].some(m => rMonth.includes(m));
+          });
+
+          if (reportRow) {
+            // Try to find the correct column for "Expense borne by each Owner"
+            // Common variations + exact user specification
+            const val = reportRow['Expense borne by each Owner'] ||
+              reportRow['Expense_borne_by_each_Owner'] ||
+              reportRow['Share per Flat'] ||
+              reportRow['share_per_flat'] || 0;
+
+            // Clean amount string if necessary
+            const numVal = typeof val === 'string' ? Number(val.replace(/,/g, '')) : Number(val);
+            if (!isNaN(numVal)) {
+              total += numVal;
+            }
+          } else {
+            // Fallback to legacy config if month missing in report
+            // Handle inconsistent spelling of sep/sept
+            const monthExpenses = {
+              aug: expenses2025.aug || 0,
+              sept: expenses2025.sep || expenses2025.sept || 663,
+              oct: expenses2025.oct || 1000,
+              nov: expenses2025.nov || 815,
+              dec: expenses2025.dec || 780
+            };
+            const key = month === 'sept' ? (monthExpenses.sept !== undefined ? 'sept' : 'sep') : month;
+            total += (monthExpenses as any)[key] || 0;
+          }
+        }
+      }
+      return Math.round(total); // Round to nearest integer for cleanliness
+    }
+
+    // 3. Fallback to Legacy Logic if no report data
+    const monthExpenses = {
+      aug: expenses2025.aug || 0,
+      sept: expenses2025.sep || expenses2025.sept || 663,
+      oct: expenses2025.oct || 1000,
+      nov: expenses2025.nov || 815,
+      dec: expenses2025.dec || 780
+    };
+
     let totalExpense = 0;
     let countFromStart = false;
     for (const month of monthOrder) {
       if (month === startMonth) countFromStart = true;
       if (countFromStart) {
-        totalExpense += monthExpenses[month];
+        // Handle inconsistent spelling of sep/sept in data vs config
+        const key = month === 'sept' ? (monthExpenses.sept !== undefined ? 'sept' : 'sep') : month;
+        totalExpense += (monthExpenses as any)[key] || 0;
       }
     }
     return totalExpense;
@@ -182,21 +272,43 @@ const App: React.FC = () => {
     const carryForward = p26.carryForward2025;
     const q1Payment = p26.q1Payment;
     const totalAvailable = carryForward + q1Payment;
-    const sharedExp2025 = calculateSharedExp2025(p25);
-    const totalPaid2025 = carryForward + sharedExp2025;
-    const lifetimePaid = totalPaid2025 + q1Payment;
-    
+    const sharedExp2025 = calculateSharedExp2025(p25, expenses2025, expenseReport);
+
+    // Updated Logic: Lifetime Paid = 2025 Payments + 2026 Q1 Payment
+    // const totalPaid2025 = carryForward + sharedExp2025; // Legacy logic removed
+    // const lifetimePaid = totalPaid2025 + q1Payment; // Legacy logic removed
+
+    const lifetimePaid = calculateLifetimePaid(p25, p26);
+
     let q1Status: 'Covered' | 'Partial Covered' | 'Paid' | 'Partial Paid' | 'Due' = 'Due';
-    
-    let q1Due = Q1_DUE_AMOUNT;
-    if (p26.remarks && p26.remarks.toLowerCase().includes('n/a for jan')) {
-      q1Due -= MONTHLY_MAINTENANCE_2026;
-    }
-    if (p26.remarks && p26.remarks.toLowerCase().includes('n/a for feb')) {
-      q1Due -= MONTHLY_MAINTENANCE_2026;
+
+    // EXCEPTION: Exempted Flats for 1A3 and 1E1
+    const exemptedFlats = ['1A3', '1E1'];
+    if (exemptedFlats.includes(owner.flatNo)) {
+      q1Status = 'Paid';
     }
 
-    if (p26.outstanding === Q1_DUE_AMOUNT) {
+
+    // Use dynamic config
+    let q1Due = appConfig.q1Due;
+    const monthlyMaintenance = appConfig.monthlyMaintenance2026;
+
+    if (p26.remarks && p26.remarks.toLowerCase().includes('n/a for jan')) {
+      q1Due -= monthlyMaintenance;
+    }
+    if (p26.remarks && p26.remarks.toLowerCase().includes('n/a for feb')) {
+      q1Due -= monthlyMaintenance;
+    }
+
+    // Check for N/A exemption flags from data
+    if (p26.janExempt) {
+      q1Due -= 2000;
+    }
+    if (p26.febExempt) {
+      q1Due -= 2000;
+    }
+
+    if (p26.outstanding === q1Due) {
       q1Status = 'Due';
     } else {
       const remarksStatus = calculateQ1StatusFromRemarks(p26.remarks || '');
@@ -219,6 +331,8 @@ const App: React.FC = () => {
       owner,
       p2025: p25,
       p2026: p26,
+      expenses2025: expenses2025,
+      config: appConfig,
       calculated: {
         expenseShare2025: sharedExp2025,
         carryForward,
@@ -249,7 +363,7 @@ const App: React.FC = () => {
               <img src="/1000551042-removebg-preview.png" alt="Hijibiji Logo" className="w-full h-full object-contain" />
             </div>
           </div>
-          
+
           <h1 className="text-3xl font-black mb-2 tracking-tight">Hijibiji Portal</h1>
           <div className="flex items-center justify-center gap-2 mb-10">
             <p className="text-white/40 max-w-sm text-xs font-black uppercase tracking-[0.2em]">Financial Registry</p>
@@ -265,7 +379,7 @@ const App: React.FC = () => {
             <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isSearchFocused ? 'text-indigo-400' : 'text-white/30'}`}>
               <Search size={20} />
             </div>
-            <input 
+            <input
               type="text"
               placeholder="Unit No. (e.g. 1B3)..."
               className="w-full h-16 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[1.5rem] pl-12 pr-12 outline-none focus:ring-2 ring-indigo-500/50 transition-all text-lg placeholder:text-white/20 font-medium"
@@ -274,14 +388,14 @@ const App: React.FC = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             {searchQuery && (
-              <button 
+              <button
                 onClick={() => setSearchQuery('')}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-all"
               >
                 <X size={20} />
               </button>
             )}
-            
+
             {(isSearchFocused && searchResults.length > 0) && (
               <div className="absolute top-[4.5rem] left-0 right-0 glass rounded-[1.5rem] overflow-hidden z-50 text-left shadow-2xl border-white/10 animate-in slide-in-from-top-2 max-h-72 overflow-y-auto">
                 <div className="px-4 py-3 border-b border-white/5 bg-white/5 text-[10px] font-black uppercase tracking-widest text-white/40 flex justify-between items-center">
@@ -289,7 +403,7 @@ const App: React.FC = () => {
                   <span className="text-white/60">{searchResults.length}</span>
                 </div>
                 {searchResults.map((owner) => (
-                  <button 
+                  <button
                     key={owner.flatNo}
                     onClick={() => handleSelectOwner(owner)}
                     className="w-full p-5 border-b border-white/5 flex items-center justify-start hover:bg-white/10 transition-colors group"
@@ -338,7 +452,7 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          <button 
+          <button
             onClick={() => setView('admin_login')}
             className="flex items-center gap-3 px-8 py-4 glass rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/10 transition-all neo-button"
           >
@@ -348,26 +462,28 @@ const App: React.FC = () => {
         </div>
       )}
       {view === 'owner' && selectedOwnerData && (
-        <OwnerDashboard 
-          data={selectedOwnerData} 
-          onBack={() => { setView('landing'); setSearchQuery(''); setIsSearchFocused(false); }} 
+        <OwnerDashboard
+          data={selectedOwnerData}
+          onBack={() => { setView('landing'); setSearchQuery(''); setIsSearchFocused(false); }}
         />
       )}
       {view === 'admin_login' && (
-        <Login 
-          onSuccess={() => setView('admin')} 
-          onCancel={() => setView('landing')} 
+        <Login
+          onSuccess={() => setView('admin')}
+          onCancel={() => setView('landing')}
         />
       )}
       {view === 'admin' && (
-        <AdminDashboard 
+        <AdminDashboard
           owners={owners}
           p25={p25List}
           p26={p26List}
           setOwners={setOwners}
           setP25={setP25List}
           setP26={setP26List}
-          onLogout={() => setView('landing')} 
+          expenses2025={expenses2025}
+          expenseReport={expenseReport}
+          onLogout={() => setView('landing')}
         />
       )}
     </main>

@@ -18,14 +18,17 @@ export const getMonthlyExpenseBreakdown = (
     // If report available, try to fetch from it
     if (expenseReport && expenseReport.length > 0) {
         for (const month of monthOrder) {
+            // Find record for this month (case-insensitive)
             const reportRow = expenseReport.find(r => {
-                const rMonth = (r.Month || r.month || '').toLowerCase();
-                return monthMap[month].some(m => rMonth.includes(m));
+                const rMonth = String(r.Month || r.month || '').toLowerCase().trim();
+                return monthMap[month].some(m => rMonth === m || rMonth.includes(m));
             });
 
             if (reportRow) {
+                // Prioritize user specified column, then common variations
                 const val = reportRow['Expense borne by each Owner'] ||
                     reportRow['Expense_borne_by_each_Owner'] ||
+                    reportRow['Expense Borne By Each Owner'] ||
                     reportRow['Share per Flat'] ||
                     reportRow['share_per_flat'] || 0;
 

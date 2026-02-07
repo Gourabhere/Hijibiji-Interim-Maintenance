@@ -32,167 +32,81 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = 'https://bhdrlzaqejkrqsozbcbr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJoZHJsemFxZWprcnFzb3piY2JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4NzM4OTAsImV4cCI6MjA4NTQ0OTg5MH0.W1kWS99fv-QjQI_eVE3XvPhMWbgMQoGqOtaUHcVlP9s';
 
-console.log('🔌 Initializing Supabase client...');
-console.log('📍 URL:', SUPABASE_URL);
-
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// Global debug store for column inspection
-export const debugInfo = {
-  p25Sample: null as any,
-  p26Sample: null as any,
-  p25Columns: [] as string[],
-  p26Columns: [] as string[]
-};
-
-// Make it available globally for inspection
-if (typeof window !== 'undefined') {
-  (window as any).hijibijnDebug = debugInfo;
-}
 
 // Test connection and show diagnostic info
 export const testConnection = async () => {
   try {
-    console.log('🧪 Testing Supabase connection...');
-
     // First test: just authenticate
-    console.log('  → Checking auth...');
-    const { data: authData, error: authError } = await supabase.auth.getSession();
-    if (authError) console.warn('    Auth check:', authError);
-    console.log('    Session:', authData?.session ? 'Active' : 'Anon');
+    const { error: authError } = await supabase.auth.getSession();
+    if (authError) { /* silent failure */ }
 
     // Test each table and show column names
     const tables = ['Registered_Owner_Details', 'Collections_2025', 'Collections_2026', 'Maintenance_Config'];
 
     for (const tableName of tables) {
-      console.log(`\n  → Testing table: ${tableName}`);
-      const { data: tableData, error: tableError, status } = await supabase
+      const { data: tableData, error: tableError } = await supabase
         .from(tableName)
         .select('*')
         .limit(1);
 
       if (tableError) {
-        console.error(`    ❌ Error accessing ${tableName}:`, tableError.message);
-      } else if (tableData && tableData.length > 0) {
-        const columns = Object.keys(tableData[0]);
-        console.log(`    ✅ Found ${tableData.length}+ records`);
-        console.log(`    Columns: ${columns.join(', ')}`);
-        console.log(`    Sample:`, tableData[0]);
-      } else {
-        console.warn(`    ⚠️ Table exists but has no data`);
+        // Silent error
       }
     }
 
-    console.log('\n✅ Connection and diagnostics complete!');
     return true;
   } catch (err: any) {
-    console.error('❌ Connection error:', {
-      message: err?.message,
-      stack: err?.stack,
-      type: err?.constructor?.name
-    });
     return false;
   }
 };
 
 export const fetchAllData = async () => {
   try {
-    console.log('📥 Starting data fetch from Supabase...');
-
-    // Fetch from Registered_Owner_Details - try with wildcard first to see all columns
-    console.log('Fetching Registered_Owner_Details (discovering columns)...');
-    const { data: ownersRaw, error: ownersError } = await supabase
-      .from('Registered_Owner_Details')
-      .select('*')
-      .limit(1);
-
-    if (ownersError) {
-      console.error('❌ Owners fetch error:', ownersError);
-      return null;
-    }
-
-    if (ownersRaw && ownersRaw.length > 0) {
-      const columns = Object.keys(ownersRaw[0]);
-      console.log('✅ Owners table columns:', columns.join(', '));
-      console.log('   Sample record:', ownersRaw[0]);
-    }
-
-    // Now fetch all owners
+    // Fetch from Registered_Owner_Details
     const { data: ownersFullRaw, error: ownersFullError } = await supabase
       .from('Registered_Owner_Details')
       .select('*');
 
     if (ownersFullError) {
-      console.error('❌ Full owners fetch error:', ownersFullError);
       return null;
     }
-    console.log('✅ Owners fetched:', ownersFullRaw?.length || 0, 'records');
+
     // Fetch from Collections_2025
-    console.log('Fetching Collections_2025 (discovering columns)...');
     const { data: p25Raw, error: p25Error } = await supabase
       .from('Collections_2025')
       .select('*');
 
     if (p25Error) {
-      console.error('❌ Collections_2025 fetch error:', p25Error);
       return null;
-    }
-    console.log('✅ Collections_2025 fetched:', p25Raw?.length || 0, 'records');
-
-    if (p25Raw && p25Raw.length > 0) {
-      console.log('📊 Collections_2025 columns:', Object.keys(p25Raw[0]).join(', '));
-      console.log('📊 Collections_2025 FIRST RECORD (RAW):', JSON.stringify(p25Raw[0], null, 2));
-      debugInfo.p25Sample = p25Raw[0];
-      debugInfo.p25Columns = Object.keys(p25Raw[0]);
     }
 
     // Fetch from Collections_2026
-    console.log('Fetching Collections_2026 (discovering columns)...');
     const { data: p26Raw, error: p26Error } = await supabase
       .from('Collections_2026')
       .select('*');
 
     if (p26Error) {
-      console.error('❌ Collections_2026 fetch error:', p26Error);
       return null;
-    }
-    console.log('✅ Collections_2026 fetched:', p26Raw?.length || 0, 'records');
-
-    if (p26Raw && p26Raw.length > 0) {
-      console.log('📊 Collections_2026 columns:', Object.keys(p26Raw[0]).join(', '));
-      console.log('📊 Collections_2026 FIRST RECORD (RAW):', JSON.stringify(p26Raw[0], null, 2));
-      debugInfo.p26Sample = p26Raw[0];
-      debugInfo.p26Columns = Object.keys(p26Raw[0]);
     }
 
     // Fetch from Excess_Amount_2025
-    console.log('Fetching Excess_Amount_2025...');
     const { data: excessRaw, error: excessError } = await supabase
       .from('Excess_Amount_2025')
       .select('*');
 
     if (excessError) {
-      console.error('❌ Excess_Amount_2025 fetch error:', excessError);
-      // Don't fail - this table is optional
-    } else {
     }
 
     // Fetch Expense_report_2025
-    console.log('Fetching Expense_report_2025...');
     const { data: expenseReportRaw, error: expenseReportError } = await supabase
       .from('Expense_report_2025')
       .select('*');
 
     if (expenseReportError) {
-      console.error('❌ Expense_report_2025 fetch error:', expenseReportError);
-    } else if (expenseReportRaw && expenseReportRaw.length > 0) {
-      console.log('✅ Expense_report_2025 fetched:', expenseReportRaw.length, 'records');
-      console.log('📊 Expense_Report Columns:', Object.keys(expenseReportRaw[0]));
-      console.log('   Sample:', expenseReportRaw[0]);
     }
 
     // Fetch Maintenance_Config
-    console.log('Fetching Maintenance_Config...');
     const { data: configRaw, error: configError } = await supabase
       .from('Maintenance_Config')
       .select('*');
@@ -200,14 +114,10 @@ export const fetchAllData = async () => {
     let expenses2025 = { aug: 0, sep: 0, oct: 0, nov: 0, dec: 0 }; // Default Fallback
     let config = { q1Due: 6000, monthlyMaintenance2026: 2000 }; // Default Fallback
 
-    if (configError) {
-      console.warn('⚠️ Could not fetch Maintenance_Config (likely doesn\'t exist yet). Using defaults.');
-    } else if (configRaw) {
-      console.log('✅ Maintenance_Config fetched:', configRaw.length, 'records');
+    if (!configError && configRaw) {
       const expensesRow = configRaw.find((r: any) => r.key === 'expenses_2025');
       if (expensesRow?.value) {
         expenses2025 = expensesRow.value;
-        console.log('   Loaded 2025 Expenses:', expenses2025);
       }
 
       const generalRow = configRaw.find((r: any) => r.key === 'general_config');
@@ -216,26 +126,11 @@ export const fetchAllData = async () => {
           q1Due: generalRow.value.q1_due_amount || 6000,
           monthlyMaintenance2026: generalRow.value.monthly_maintenance_2026 || 2000
         };
-        console.log('   Loaded General Config:', config);
       }
     }
 
     if (!ownersFullRaw || !p25Raw || !p26Raw) {
-      console.error('⚠️ Some required queries failed');
       return null;
-    }
-
-    // Check if data tables are empty
-    if (p25Raw.length === 0) {
-      console.warn('⚠️ Collections_2025 is EMPTY - no payment records in database!');
-    } else {
-      console.log('✅ Collections_2025 has data for', p25Raw.length, 'records');
-    }
-
-    if (p26Raw.length === 0) {
-      console.warn('⚠️ Collections_2026 is EMPTY - no payment records in database!');
-    } else {
-      console.log('✅ Collections_2026 has data for', p26Raw.length, 'records');
     }
 
     // Smart column name detection with detailed logging
@@ -288,38 +183,8 @@ export const fetchAllData = async () => {
         })
         .map(([key]) => key);
 
-      console.log(`📊 Found ${numericCols.length} numeric columns: ${numericCols.join(', ')}`);
       return numericCols;
     };
-
-    // Debug: Log actual columns from sample records
-    if (p25Raw && p25Raw.length > 0) {
-      debugInfo.p25Sample = p25Raw[0];
-      debugInfo.p25Columns = Object.keys(p25Raw[0]);
-      console.log('📊 Collections_2025 sample record:', p25Raw[0]);
-      console.log('   Available columns:', Object.keys(p25Raw[0]).join(', '));
-
-      // Log to window for debugging
-      if (typeof window !== 'undefined') {
-        (window as any).p25SampleDebug = p25Raw[0];
-      }
-    } else {
-      console.warn('⚠️ Collections_2025 has NO data!');
-    }
-
-    if (p26Raw && p26Raw.length > 0) {
-      debugInfo.p26Sample = p26Raw[0];
-      debugInfo.p26Columns = Object.keys(p26Raw[0]);
-      console.log('📊 Collections_2026 sample record:', p26Raw[0]);
-      console.log('   Available columns:', Object.keys(p26Raw[0]).join(', '));
-
-      // Log to window for debugging
-      if (typeof window !== 'undefined') {
-        (window as any).p26SampleDebug = p26Raw[0];
-      }
-    } else {
-      console.warn('⚠️ Collections_2026 has NO data!');
-    }
 
     // Build excess maps
     const excessMap: Record<string, number> = {};
@@ -334,7 +199,6 @@ export const fetchAllData = async () => {
         sharedExp2025Map[flatNo] = cleanAmount(sharedExp);
       }
     });
-    console.log('📊 Maps built for', Object.keys(excessMap).length, 'flats');
 
     // Map Registered_Owner_Details - auto-detect columns
     const owners = (ownersFullRaw || []).map(o => ({
@@ -357,10 +221,6 @@ export const fetchAllData = async () => {
         outstanding: cleanAmount(detectColumn(p, 'Outstanding_in_2025', 'outstanding_in_2025')),
         sharedExp2025: sharedExp2025Map[detectColumn(p, 'Flat_No', 'flat_no', 'Flat No', 'flat no') || ''] || 0
       };
-      if (idx === 0) {
-        console.log('✅ Collections_2025 first record mapped:', mapped);
-        console.log('   Raw record was:', p);
-      }
       return mapped;
     });
 
@@ -399,24 +259,11 @@ export const fetchAllData = async () => {
         mapped.outstanding = 0;
       }
 
-      if (idx === 0) {
-        console.log('✅ Collections_2026 first record mapped:', mapped);
-        console.log('   Raw record was:', p);
-      }
       return mapped;
     });
 
-    console.log('✅ Data mapping complete. Summary:', {
-      owners: owners.length,
-      collections2025: p25.length,
-      collections2026: p26.length,
-      averageP25Amount: p25.length > 0 ? (p25.reduce((sum, p) => sum + (p.aug + p.sept + p.oct + p.nov + p.dec), 0) / p25.length / 5).toFixed(2) : 'N/A',
-      averageP26Amount: p26.length > 0 ? (p26.reduce((sum, p) => sum + (p.jan + p.feb + p.mar + p.apr + p.may + p.jun + p.jul + p.aug + p.sep + p.oct + p.nov + p.dec), 0) / p26.length / 12).toFixed(2) : 'N/A'
-    });
-
-    return { owners, p25, p26, expenses2025, config, expenseReport: expenseReportRaw || [] };
-  } catch (err) {
-    console.error('❌ Supabase operation failed:', err);
+    return { owners, p25, p26, expenses2025, config };
+  } catch (err: any) {
     return null;
   }
 };

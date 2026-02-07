@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { 
-  ArrowLeft, Wallet, Info, CheckCircle2, AlertCircle, 
+import {
+  ArrowLeft, Wallet, Info, CheckCircle2, AlertCircle,
   Clock, Megaphone, Activity, PhoneCall, Zap, Droplets, Dumbbell,
   Shield, CreditCard, TrendingUp, TrendingDown, History, X
 } from 'lucide-react';
@@ -134,7 +134,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
   // Generate contextual notifications
   const getNotifications = () => {
     const notif = [];
-    
+
     if (calculated.q1Status === 'Partial Covered' && selectedYear === 2026) {
       notif.push({
         type: 'warning',
@@ -167,7 +167,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
   const Tooltip = ({ id, children }: { id: string; children: React.ReactNode }) => {
     const tooltip = tooltips[id];
     if (!tooltip) return <>{children}</>;
-    
+
     return (
       <div className="relative group">
         {children}
@@ -221,40 +221,37 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
       {getNotifications().map((notif, idx) => (
         <div
           key={idx}
-          className={`rounded-[1.5rem] p-4 border animate-in slide-in-from-top-2 ${
-            notif.type === 'success'
-              ? 'glass border-emerald-400/30 bg-emerald-500/10'
-              : notif.type === 'warning'
+          className={`rounded-[1.5rem] p-4 border animate-in slide-in-from-top-2 ${notif.type === 'success'
+            ? 'glass border-emerald-400/30 bg-emerald-500/10'
+            : notif.type === 'warning'
               ? 'glass border-amber-400/30 bg-amber-500/10'
               : notif.type === 'alert'
-              ? 'glass border-rose-400/30 bg-rose-500/10'
-              : 'glass border-cyan-400/30 bg-cyan-500/10'
-          }`}
+                ? 'glass border-rose-400/30 bg-rose-500/10'
+                : 'glass border-cyan-400/30 bg-cyan-500/10'
+            }`}
         >
           <div className="flex items-start gap-3">
             <span
-              className={`text-xl font-black flex-shrink-0 ${
-                notif.type === 'success'
-                  ? 'text-emerald-400'
-                  : notif.type === 'warning'
+              className={`text-xl font-black flex-shrink-0 ${notif.type === 'success'
+                ? 'text-emerald-400'
+                : notif.type === 'warning'
                   ? 'text-amber-400'
                   : notif.type === 'alert'
-                  ? 'text-rose-400'
-                  : 'text-cyan-400'
-              }`}
+                    ? 'text-rose-400'
+                    : 'text-cyan-400'
+                }`}
             >
               {notif.icon}
             </span>
             <div className="flex-1 min-w-0">
-              <h4 className={`font-black text-sm mb-1 ${
-                notif.type === 'success'
-                  ? 'text-emerald-300'
-                  : notif.type === 'warning'
+              <h4 className={`font-black text-sm mb-1 ${notif.type === 'success'
+                ? 'text-emerald-300'
+                : notif.type === 'warning'
                   ? 'text-amber-300'
                   : notif.type === 'alert'
-                  ? 'text-rose-300'
-                  : 'text-cyan-300'
-              }`}>
+                    ? 'text-rose-300'
+                    : 'text-cyan-300'
+                }`}>
                 {notif.title}
               </h4>
               <p className="text-xs text-white/70">{notif.message}</p>
@@ -277,7 +274,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
               </Tooltip>
             </div>
             <div className="text-4xl font-black mb-6">{calculated.q1Status}</div>
-            
+
             {['Due', 'Partial Paid'].includes(calculated.q1Status) && (
               <div className="mt-4 mb-6">
                 <button
@@ -289,23 +286,23 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
                 </button>
               </div>
             )}
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="p-3 bg-white/10 rounded-2xl border border-white/10 backdrop-blur-md">
                 <div className="text-[8px] font-black uppercase opacity-60 mb-1 flex items-center gap-1">
-                   <History size={10} /> Lifetime Paid
-                   <Tooltip id="lifetime">
-                     <span></span>
-                   </Tooltip>
+                  <History size={10} /> Lifetime Paid
+                  <Tooltip id="lifetime">
+                    <span></span>
+                  </Tooltip>
                 </div>
                 <div className="text-xl font-black text-indigo-200">{formatCurrency(calculated.maintenancePaidTillDate)}</div>
               </div>
               <div className="p-3 bg-white/10 rounded-2xl border border-white/10 backdrop-blur-md text-right">
                 <div className="text-[8px] font-black uppercase opacity-60 mb-1 flex items-center justify-end gap-1">
-                   2025 Shared Exp. <Wallet size={10} />
-                   <Tooltip id="expenseShare">
-                     <span></span>
-                   </Tooltip>
+                  2025 Shared Exp. <Wallet size={10} />
+                  <Tooltip id="expenseShare">
+                    <span></span>
+                  </Tooltip>
                 </div>
                 <div className="text-xl font-black text-emerald-200">{formatCurrency(calculated.expenseShare2025)}</div>
               </div>
@@ -326,14 +323,14 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
           <div className="text-xl font-black text-indigo-500 dark:text-indigo-400">{formatCurrency(p2026.carryForward2025)}</div>
           <div className="text-[8px] mt-2 text-white/30 font-bold uppercase tracking-wider">Balance from 2025</div>
         </div>
-        
+
         <div className={`glass rounded-[2rem] p-5 transition-colors duration-500 ${isDebt ? 'bg-rose-500/5' : 'bg-emerald-500/5'}`}>
           <div className="text-[9px] text-white/50 mb-1 uppercase font-black tracking-widest flex items-center gap-1">
-             {isSurplus ? 'Surplus Credit' : isDebt ? 'Amount Outstanding' : 'Balance Settled'}
-             {isSurplus ? <TrendingUp size={10} /> : isDebt ? <TrendingDown size={10} /> : null}
-             <Tooltip id="currentBalance">
-               <span></span>
-             </Tooltip>
+            {isSurplus ? 'Surplus Credit' : isDebt ? 'Amount Outstanding' : 'Balance Settled'}
+            {isSurplus ? <TrendingUp size={10} /> : isDebt ? <TrendingDown size={10} /> : null}
+            <Tooltip id="currentBalance">
+              <span></span>
+            </Tooltip>
           </div>
           <div className={`text-xl font-black ${isDebt ? 'text-rose-500 dark:text-rose-400' : 'text-cyan-600 dark:text-cyan-400'}`}>
             {formatCurrency(Math.abs(calculated.currentBalance))}
@@ -393,7 +390,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
           <h2 className="font-black text-[10px] uppercase tracking-[0.2em] text-white/30">Monthly Ledger</h2>
           <div className="flex bg-black/40 p-1 rounded-xl border border-white/10 transition-colors duration-500">
             {[2025, 2026].map(y => (
-              <button 
+              <button
                 key={y}
                 onClick={() => setSelectedYear(y as any)}
                 className={`px-5 py-2 rounded-lg text-[10px] font-black transition-all ${selectedYear === y ? 'bg-indigo-600 text-white shadow-xl scale-105' : 'text-white/40 hover:text-white'}`}
@@ -409,10 +406,9 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
             <div key={idx} className="flex flex-col items-center group">
               <button
                 onClick={() => handleMonthClick(m)}
-                className={`w-full aspect-square rounded-2xl flex items-center justify-center border-2 transition-all duration-300 mb-2 transform hover:scale-110 cursor-pointer ${
-                  m.amount >= 2000 ? 'bg-emerald-500/20 border-emerald-400/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 
+                className={`w-full aspect-square rounded-2xl flex items-center justify-center border-2 transition-all duration-300 mb-2 transform hover:scale-110 cursor-pointer ${m.amount >= 2000 ? 'bg-emerald-500/20 border-emerald-400/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]' :
                   m.amount > 0 ? 'tile-partial border-amber-300/40 hover:shadow-[0_0_15px_rgba(245,158,11,0.1)]' : 'bg-white/5 border-white/10 hover:border-white/20'
-                }`}
+                  }`}
               >
                 {m.amount >= 2000 ? <CheckCircle2 size={16} className="text-emerald-500 dark:text-emerald-400" /> : m.amount > 0 ? <Clock size={16} className="text-amber-500 dark:text-amber-300" /> : null}
               </button>
@@ -444,14 +440,13 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
 
               <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
                 <div className="text-sm text-white/50 mb-2">Status</div>
-                <div className={`text-lg font-black ${
-                  selectedMonth.status === 'paid' ? 'text-emerald-400' :
+                <div className={`text-lg font-black ${selectedMonth.status === 'paid' ? 'text-emerald-400' :
                   selectedMonth.status === 'partial' ? 'text-amber-400' :
-                  'text-rose-400'
-                }`}>
+                    'text-rose-400'
+                  }`}>
                   {selectedMonth.status === 'paid' ? '✓ Paid' :
-                   selectedMonth.status === 'partial' ? '⊙ Partial' :
-                   '○ Not Paid'}
+                    selectedMonth.status === 'partial' ? '⊙ Partial' :
+                      '○ Not Paid'}
                 </div>
               </div>
 

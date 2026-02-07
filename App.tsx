@@ -90,21 +90,14 @@ const App: React.FC = () => {
           diagLog += `📊 P25 payments: ${cloudData.p25?.length || 0} records\n`;
           diagLog += `📊 P26 payments: ${cloudData.p26?.length || 0} records\n`;
 
-          if (!cloudData.p25 || cloudData.p25.length === 0) {
-            diagLog += `⚠️ WARNING: Collections_2025 table is EMPTY!\n`;
-          }
           if (!cloudData.p26 || cloudData.p26.length === 0) {
             diagLog += `⚠️ WARNING: Collections_2026 table is EMPTY!\n`;
           }
-
-          console.log('✅ Successfully loaded data from Supabase');
         } else {
           diagLog += '⚠️ No data from cloud - using fallback\n';
-          console.log('⚠️ Cloud data empty or unavailable, using built-in registry');
         }
       } catch (err: any) {
         diagLog += `❌ Error: ${err?.message || 'Unknown'}\n`;
-        console.warn('⚠️ Cloud connection issue:', err);
       } finally {
         setDiagnostics(diagLog);
         setIsLoading(false);

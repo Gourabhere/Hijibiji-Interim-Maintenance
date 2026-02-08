@@ -191,8 +191,8 @@ const AdminDashboard: React.FC<Props> = ({
               key={item.id}
               onClick={() => setActiveTab(item.id as any)}
               className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-4'} px-6 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === item.id
-                ? 'bg-transparent text-indigo-400 shadow-neo-pressed'
-                : 'text-white/40 hover:text-white hover:bg-white/5 neo-button'
+                ? 'bg-transparent text-indigo-600 dark:text-indigo-400 shadow-neo-pressed'
+                : 'text-slate-400 dark:text-white/40 hover:text-slate-900 dark:hover:text-white hover:bg-white/5 neo-button'
                 }`}
               title={isSidebarCollapsed ? item.label : ''}
             >
@@ -204,7 +204,7 @@ const AdminDashboard: React.FC<Props> = ({
         <div className={`mt-12 pt-8 border-t border-white/5 ${isSidebarCollapsed ? 'flex justify-center' : ''}`}>
           <button
             onClick={onLogout}
-            className={`flex items-center ${isSidebarCollapsed ? 'justify-center p-4' : 'gap-4 px-6 py-4 w-full'} text-[11px] font-black uppercase tracking-widest text-rose-400 hover:bg-rose-400/10 rounded-2xl transition-all neo-button`}
+            className={`flex items-center ${isSidebarCollapsed ? 'justify-center p-4' : 'gap-4 px-6 py-4 w-full'} text-[11px] font-black uppercase tracking-widest text-rose-600 dark:text-rose-400 hover:bg-rose-400/10 rounded-2xl transition-all neo-button`}
             title={isSidebarCollapsed ? 'Logout' : ''}
           >
             <LogOut size={20} />
@@ -224,16 +224,16 @@ const AdminDashboard: React.FC<Props> = ({
                 <div className="flex justify-between items-end mb-6">
                   <div>
                     <h2 className="text-4xl font-black mb-2 tracking-tighter">{collectionRate} %</h2>
-                    <p className="text-[11px] font-black uppercase tracking-widest text-white/30 flex items-center gap-2">
+                    <p className="text-[11px] font-black uppercase tracking-widest text-slate-500 dark:text-white/30 flex items-center gap-2">
                       Total Collection Rate 2025
-                      <span className="inline-flex items-center gap-1 ml-2 px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded-lg text-[9px] shadow-neo-sm">
+                      <span className="inline-flex items-center gap-1 ml-2 px-2 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg text-[9px] shadow-neo-sm">
                         <ArrowUpRight size={12} /> +4.2% vs Jan
                       </span>
                     </p>
                   </div>
                   <div className="text-right">
-                    <div className="text-xl font-black text-emerald-400">{formatCurrency(totalCollected25)}</div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Current Liquidity</p>
+                    <div className="text-xl font-black text-emerald-600 dark:text-emerald-400">{formatCurrency(totalCollected25)}</div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-white/20">Current Liquidity</p>
                   </div>
                 </div>
                 <div className="h-3 w-full bg-black/20 neo-inset rounded-full overflow-hidden flex">
@@ -243,26 +243,26 @@ const AdminDashboard: React.FC<Props> = ({
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="rounded-[2.5rem] p-8 border border-white/5 shadow-neo-flat">
-                <h3 className="text-xs font-black uppercase tracking-widest text-white/30 mb-8 flex items-center gap-2">
+                <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-white/30 mb-8 flex items-center gap-2">
                   <Users size={16} /> Unit Breakdown
                 </h3>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-bold text-white/80">Total Registered</span>
-                  <span className="text-2xl font-black text-indigo-400">{owners.length}</span>
+                  <span className="text-sm font-bold text-slate-700 dark:text-white/80">Total Registered</span>
+                  <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400">{owners.length}</span>
                 </div>
-                <div className="text-[9px] text-white/50 mt-3">
+                <div className="text-[9px] text-slate-500 dark:text-white/50 mt-3">
                   ✓ {owners.filter(o => o.possessionDate !== 'TBD').length} Occupied
                 </div>
               </div>
               <div className="rounded-[2.5rem] p-8 border border-white/5 shadow-neo-flat">
-                <h3 className="text-xs font-black uppercase tracking-widest text-white/30 mb-8 flex items-center gap-2">
+                <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-white/30 mb-8 flex items-center gap-2">
                   <RefreshCw size={16} /> Maintenance Pulse
                 </h3>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-bold text-white/80">Q1 2026 Collection</span>
+                  <span className="text-sm font-bold text-slate-700 dark:text-white/80">Q1 2026 Collection</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl font-black text-cyan-400">{formatCurrency(totalCollected26)}</span>
-                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-cyan-500/10 text-cyan-400 rounded-lg text-[9px] shadow-neo-sm">
+                    <span className="text-2xl font-black text-cyan-600 dark:text-cyan-400">{formatCurrency(totalCollected26)}</span>
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 rounded-lg text-[9px] shadow-neo-sm">
                       <ArrowUpRight size={12} /> +8.5%
                     </span>
                   </div>
@@ -275,23 +275,23 @@ const AdminDashboard: React.FC<Props> = ({
         {activeTab === 'sync' && (
           <div className="p-12 rounded-[3rem] border border-white/5 shadow-neo-flat animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex items-center gap-4 mb-8">
-              <div className="p-3 bg-indigo-500/10 rounded-2xl text-indigo-400 shadow-neo-sm">
+              <div className="p-3 bg-indigo-500/10 rounded-2xl text-indigo-600 dark:text-indigo-400 shadow-neo-sm">
                 <Database size={24} />
               </div>
               <div>
-                <h2 className="text-2xl font-bold">Sync Hub</h2>
-                <p className="text-white/40 text-sm">Update application data from Google Sheets</p>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Sync Hub</h2>
+                <p className="text-slate-500 dark:text-white/40 text-sm">Update application data from Google Sheets</p>
               </div>
             </div>
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Spreadsheet Public URL</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/30 ml-1">Spreadsheet Public URL</label>
                 <div className="flex gap-4">
                   <input
                     type="text"
                     value={sheetUrl}
                     onChange={(e) => setSheetUrl(e.target.value)}
-                    className="flex-1 h-14 bg-black/20 neo-inset border border-white/5 rounded-2xl px-6 outline-none focus:ring-2 ring-indigo-500/50 transition-all text-sm font-medium"
+                    className="flex-1 h-14 bg-black/20 neo-inset border border-white/5 rounded-2xl px-6 outline-none focus:ring-2 ring-indigo-500/50 transition-all text-sm font-medium text-slate-900 dark:text-white"
                   />
                   <button
                     onClick={handleSync}
@@ -304,13 +304,13 @@ const AdminDashboard: React.FC<Props> = ({
                 </div>
               </div>
               <div className="pt-4 border-t border-white/5 space-y-4">
-                <div className="text-[10px] font-black uppercase tracking-widest text-white/30 flex items-center gap-2">
+                <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/30 flex items-center gap-2">
                   <CloudUpload size={14} /> Cloud Persistence
                 </div>
                 <button
                   onClick={handlePersistToCloud}
                   disabled={isPersisting}
-                  className="w-full h-14 bg-emerald-600/10 border border-emerald-500/20 text-emerald-400 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-emerald-600/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50 neo-button shadow-neo-sm"
+                  className="w-full h-14 bg-emerald-600/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-emerald-600/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50 neo-button shadow-neo-sm"
                 >
                   {isPersisting ? <RefreshCw className="animate-spin" size={16} /> : <CloudUpload size={16} />}
                   {isPersisting ? 'Committing Changes...' : 'Persist to Supabase Cloud'}
@@ -327,10 +327,10 @@ const AdminDashboard: React.FC<Props> = ({
               <div className="w-24 h-24 bg-indigo-600 rounded-[2rem] flex items-center justify-center shadow-2xl shadow-indigo-600/50 mb-8 transform -rotate-6 text-white neo-button">
                 <Sparkles size={48} />
               </div>
-              <h2 className="text-3xl font-black mb-4 tracking-tight">Gemini AI Strategist</h2>
+              <h2 className="text-3xl font-black mb-4 tracking-tight text-slate-900 dark:text-white">Gemini AI Strategist</h2>
               {aiInsight ? (
-                <div className="w-full p-8 bg-white/5 border border-white/5 rounded-[2.5rem] text-left neo-inset">
-                  <p className="text-xl font-medium italic text-indigo-100/90 leading-relaxed">"{aiInsight}"</p>
+                <div className="w-full p-8 bg-white/5 border border-white/5 rounded-[2.5rem] text-left neo-inset text-slate-900 dark:text-white">
+                  <p className="text-xl font-medium italic text-indigo-800 dark:text-indigo-100/90 leading-relaxed">"{aiInsight}"</p>
                 </div>
               ) : (
                 <button
@@ -349,22 +349,22 @@ const AdminDashboard: React.FC<Props> = ({
         {activeTab === 'owners' && (
           <div className="rounded-[3rem] overflow-hidden border border-white/5 shadow-neo-flat animate-in slide-in-from-right-4 duration-700">
             <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/2">
-              <h3 className="font-black text-xs uppercase tracking-widest text-white/40">Unit Registry</h3>
+              <h3 className="font-black text-xs uppercase tracking-widest text-slate-500 dark:text-white/40">Unit Registry</h3>
               <div className="relative w-64">
-                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" />
+                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                   placeholder="Search name, flat, or date..."
-                  className="w-full bg-black/20 neo-inset border border-white/5 text-xs font-bold rounded-xl pl-12 py-3 outline-none focus:ring-2 ring-indigo-500/30 transition-all"
+                  className="w-full bg-black/20 neo-inset border border-white/5 text-xs font-bold rounded-xl pl-12 py-3 outline-none focus:ring-2 ring-indigo-500/30 transition-all text-slate-900 dark:text-white"
                 />
               </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="text-[10px] font-black uppercase tracking-widest text-white/30 border-b border-white/5">
+                  <tr className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/30 border-b border-white/5">
                     <th className="px-10 py-6">Flat Unit</th>
                     <th className="px-10 py-6">Owner Identity</th>
                     <th className="px-10 py-6 text-right">Actions</th>
@@ -373,8 +373,8 @@ const AdminDashboard: React.FC<Props> = ({
                 <tbody className="divide-y divide-white/5">
                   {filteredOwners.map(o => (
                     <tr key={o.flatNo} className="hover:bg-white/[0.03] transition-colors group">
-                      <td className="px-10 py-6 font-black text-indigo-400 text-base">{o.flatNo}</td>
-                      <td className="px-10 py-6 font-bold text-white/80">{o.name}</td>
+                      <td className="px-10 py-6 font-black text-indigo-600 dark:text-indigo-400 text-base">{o.flatNo}</td>
+                      <td className="px-10 py-6 font-bold text-slate-700 dark:text-white/80">{o.name}</td>
                       <td className="px-10 py-6 text-right">
                         <button
                           onClick={() => {
@@ -385,7 +385,7 @@ const AdminDashboard: React.FC<Props> = ({
                               setShowEditModal(true);
                             }
                           }}
-                          className="p-2.5 rounded-xl text-white/20 group-hover:text-cyan-400 transition-all neo-button"
+                          className="p-2.5 rounded-xl text-slate-400 dark:text-white/20 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-all neo-button"
                         >
                           <ArrowUpRight size={16} />
                         </button>
@@ -394,7 +394,7 @@ const AdminDashboard: React.FC<Props> = ({
                   ))}
                   {filteredOwners.length === 0 && (
                     <tr>
-                      <td colSpan={3} className="px-10 py-8 text-center text-white/30 text-sm font-medium">
+                      <td colSpan={3} className="px-10 py-8 text-center text-slate-400 dark:text-white/30 text-sm font-medium">
                         No matching records found.
                       </td>
                     </tr>
@@ -407,7 +407,7 @@ const AdminDashboard: React.FC<Props> = ({
 
         {activeTab === 'debug' && (
           <div className="rounded-[3rem] overflow-hidden border border-white/5 shadow-neo-flat animate-in slide-in-from-right-4 duration-700 p-8">
-            <h3 className="font-black text-xs uppercase tracking-widest text-white/40 mb-6">Data Debug & Inspection</h3>
+            <h3 className="font-black text-xs uppercase tracking-widest text-slate-500 dark:text-white/40 mb-6">Data Debug & Inspection</h3>
             <DataDebugTable owners={owners} p25List={p25} p26List={p26} expenses2025={expenses2025} expenseReport={expenseReport} />
           </div>
         )}
@@ -426,7 +426,7 @@ const AdminDashboard: React.FC<Props> = ({
             onClick={() => setActiveTab(item.id as any)}
             className={`p-4 rounded-2xl transition-all ${activeTab === item.id ? 'bg-indigo-600 shadow-xl scale-110' : 'opacity-40'}`}
           >
-            <item.icon size={22} className="text-white" />
+            <item.icon size={22} className="text-slate-200 dark:text-white" />
           </button>
         ))}
       </nav>

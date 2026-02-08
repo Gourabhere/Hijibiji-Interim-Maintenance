@@ -112,7 +112,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
       case 'Partial Paid':
         return 'bg-amber-600/10 border-amber-500/20 text-amber-100 shadow-neo-flat';
       default:
-        return 'bg-rose-600/10 border-rose-500/20 text-rose-100 shadow-neo-flat';
+        return 'bg-rose-600/10 border-rose-500/20 text-rose-600 dark:text-rose-100 shadow-neo-flat';
     }
   };
 
@@ -194,7 +194,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
         </button>
         <div>
           <h1 className="text-xl font-black tracking-tight">Flat {owner.flatNo}</h1>
-          <p className="text-[10px] text-cyan-500 dark:text-cyan-400 uppercase font-black tracking-[0.2em]">{owner.name}</p>
+          <p className="text-[10px] text-cyan-600 dark:text-cyan-400 uppercase font-black tracking-[0.2em]">{owner.name}</p>
         </div>
       </div>
 
@@ -203,8 +203,8 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
         <div className="rounded-[1.5rem] p-4 border border-indigo-400/30 bg-indigo-500/10 animate-in slide-in-from-top-2 shadow-neo-sm">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h4 className="text-sm font-black text-indigo-300 mb-1">{tooltips[activeTooltip].title}</h4>
-              <p className="text-xs text-white/70 leading-relaxed">{tooltips[activeTooltip].description}</p>
+              <h4 className="text-sm font-black text-indigo-600 dark:text-indigo-300 mb-1">{tooltips[activeTooltip].title}</h4>
+              <p className="text-xs text-slate-600 dark:text-white/70 leading-relaxed">{tooltips[activeTooltip].description}</p>
             </div>
             <button
               onClick={() => setActiveTooltip(null)}
@@ -244,16 +244,16 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
             </span>
             <div className="flex-1 min-w-0">
               <h4 className={`font-black text-sm mb-1 ${notif.type === 'success'
-                ? 'text-emerald-300'
+                ? 'text-emerald-700 dark:text-emerald-300'
                 : notif.type === 'warning'
-                  ? 'text-amber-300'
+                  ? 'text-amber-700 dark:text-amber-300'
                   : notif.type === 'alert'
-                    ? 'text-rose-300'
-                    : 'text-cyan-300'
+                    ? 'text-rose-700 dark:text-rose-300'
+                    : 'text-cyan-700 dark:text-cyan-300'
                 }`}>
                 {notif.title}
               </h4>
-              <p className="text-xs text-white/70">{notif.message}</p>
+              <p className="text-xs text-slate-600 dark:text-white/70">{notif.message}</p>
             </div>
           </div>
         </div>
@@ -272,7 +272,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
                 <span></span>
               </Tooltip>
             </div>
-            <div className="text-4xl font-black mb-6">{calculated.q1Status}</div>
+            <div className="text-4xl font-black mb-6 text-slate-800 dark:text-white">{calculated.q1Status}</div>
 
             {['Due', 'Partial Paid'].includes(calculated.q1Status) && (
               <div className="mt-4 mb-6">
@@ -294,7 +294,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
                     <span></span>
                   </Tooltip>
                 </div>
-                <div className="text-xl font-black text-indigo-200">{formatCurrency(calculated.maintenancePaidTillDate)}</div>
+                <div className="text-xl font-black text-indigo-700 dark:text-indigo-200">{formatCurrency(calculated.maintenancePaidTillDate)}</div>
               </div>
               <div className="p-3 bg-black/20 rounded-2xl border border-white/5 neo-inset text-right">
                 <div className="text-[8px] font-black uppercase opacity-60 mb-1 flex items-center justify-end gap-1">
@@ -303,7 +303,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
                     <span></span>
                   </Tooltip>
                 </div>
-                <div className="text-xl font-black text-emerald-200">{formatCurrency(calculated.expenseShare2025)}</div>
+                <div className="text-xl font-black text-emerald-700 dark:text-emerald-200">{formatCurrency(calculated.expenseShare2025)}</div>
               </div>
             </div>
           </div>
@@ -313,18 +313,18 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
       {/* Financial Breakdown */}
       <div className="grid grid-cols-2 gap-4">
         <div className="rounded-[2rem] p-5 shadow-neo-flat border border-white/5">
-          <div className="text-[9px] text-white/50 mb-1 uppercase font-black tracking-widest flex items-center gap-1">
+          <div className="text-[9px] text-slate-500 dark:text-white/50 mb-1 uppercase font-black tracking-widest flex items-center gap-1">
             2025 carry forward
             <Tooltip id="carryForward">
               <span></span>
             </Tooltip>
           </div>
           <div className="text-xl font-black text-indigo-500 dark:text-indigo-400">{formatCurrency(p2026.carryForward2025)}</div>
-          <div className="text-[8px] mt-2 text-white/30 font-bold uppercase tracking-wider">Balance from 2025</div>
+          <div className="text-[8px] mt-2 text-slate-400 dark:text-white/30 font-bold uppercase tracking-wider">Balance from 2025</div>
         </div>
 
         <div className={`rounded-[2rem] p-5 transition-colors duration-500 shadow-neo-flat border border-white/5 ${isDebt ? 'bg-rose-500/5' : 'bg-emerald-500/5'}`}>
-          <div className="text-[9px] text-white/50 mb-1 uppercase font-black tracking-widest flex items-center gap-1">
+          <div className="text-[9px] text-slate-500 dark:text-white/50 mb-1 uppercase font-black tracking-widest flex items-center gap-1">
             {isSurplus ? 'Surplus Credit' : isDebt ? 'Amount Outstanding' : 'Balance Settled'}
             {isSurplus ? <TrendingUp size={10} /> : isDebt ? <TrendingDown size={10} /> : null}
             <Tooltip id="currentBalance">
@@ -334,7 +334,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
           <div className={`text-xl font-black ${isDebt ? 'text-rose-500 dark:text-rose-400' : 'text-cyan-600 dark:text-cyan-400'}`}>
             {formatCurrency(Math.abs(calculated.currentBalance))}
           </div>
-          <div className="text-[8px] mt-2 text-white/30 font-bold uppercase tracking-wider">
+          <div className="text-[8px] mt-2 text-slate-400 dark:text-white/30 font-bold uppercase tracking-wider">
             {isSurplus ? 'Advance for Q2/Q3' : isDebt ? 'Q1 Payment Required' : 'Q1 Fully Paid'}
           </div>
         </div>
@@ -343,7 +343,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
       {/* Coverage Progress */}
       {selectedYear === 2026 && (
         <div className="rounded-[2rem] p-5 shadow-neo-flat border border-white/5">
-          <div className="text-[9px] text-white/50 mb-3 uppercase font-black tracking-widest">Coverage Progress</div>
+          <div className="text-[9px] text-slate-500 dark:text-white/50 mb-3 uppercase font-black tracking-widest">Coverage Progress</div>
           <div className="flex items-center gap-4">
             <div className="flex-1">
               <div className="w-full neo-inset rounded-full h-3 overflow-hidden bg-black/20">
@@ -354,8 +354,8 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
               </div>
             </div>
             <div className="text-right">
-              <div className="text-lg font-black text-cyan-400">{monthsCovered}/{totalMonths}</div>
-              <div className="text-[8px] text-white/40">{coveragePercent}%</div>
+              <div className="text-lg font-black text-cyan-600 dark:text-cyan-400">{monthsCovered}/{totalMonths}</div>
+              <div className="text-[8px] text-slate-400 dark:text-white/40">{coveragePercent}%</div>
             </div>
           </div>
         </div>
@@ -365,19 +365,19 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
       <div className="rounded-[2rem] p-6 shadow-neo-flat border border-white/5">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-cyan-500/20 rounded-xl text-cyan-600 dark:text-cyan-400 shadow-neo-sm"><Activity size={18} /></div>
-          <h3 className="font-black text-xs uppercase tracking-widest text-white/50">Society Pulse</h3>
-          <span className="text-[8px] text-white/30 ml-auto">Updated now</span>
+          <h3 className="font-black text-xs uppercase tracking-widest text-slate-500 dark:text-white/50">Society Pulse</h3>
+          <span className="text-[8px] text-slate-400 dark:text-white/30 ml-auto">Updated now</span>
         </div>
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: 'Lifts', status: 'Online', icon: Zap, color: 'text-emerald-500 dark:text-emerald-400' },
-            { label: 'Water', status: 'Stable', icon: Droplets, color: 'text-sky-500 dark:text-sky-400' },
-            { label: 'Security', status: 'Active', icon: Shield, color: 'text-indigo-500 dark:text-indigo-400' },
+            { label: 'Lifts', status: 'Online', icon: Zap, color: 'text-emerald-600 dark:text-emerald-400' },
+            { label: 'Water', status: 'Stable', icon: Droplets, color: 'text-sky-600 dark:text-sky-400' },
+            { label: 'Security', status: 'Active', icon: Shield, color: 'text-indigo-600 dark:text-indigo-400' },
           ].map((f, i) => (
             <div key={i} className="bg-transparent p-4 rounded-2xl border border-white/5 hover:border-white/20 flex flex-col items-center text-center transition-all duration-300 cursor-pointer neo-button">
               <f.icon size={20} className={`mb-2 ${f.color}`} />
-              <div className="text-[9px] font-black uppercase tracking-tighter text-white/40 mb-1">{f.label}</div>
-              <div className="text-[10px] font-bold text-white">{f.status}</div>
+              <div className="text-[9px] font-black uppercase tracking-tighter text-slate-500 dark:text-white/40 mb-1">{f.label}</div>
+              <div className="text-[10px] font-bold text-slate-900 dark:text-white">{f.status}</div>
             </div>
           ))}
         </div>
@@ -386,13 +386,13 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
       {/* Payment History Grid */}
       <div className="rounded-[2.5rem] p-6 shadow-neo-flat border border-white/5">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="font-black text-[10px] uppercase tracking-[0.2em] text-white/30">Monthly Ledger</h2>
+          <h2 className="font-black text-[10px] uppercase tracking-[0.2em] text-slate-400 dark:text-white/30">Monthly Ledger</h2>
           <div className="flex bg-black/20 neo-inset p-1 rounded-xl transition-colors duration-500">
             {[2025, 2026].map(y => (
               <button
                 key={y}
                 onClick={() => setSelectedYear(y as any)}
-                className={`px-5 py-2 rounded-lg text-[10px] font-black transition-all ${selectedYear === y ? 'bg-indigo-600 text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
+                className={`px-5 py-2 rounded-lg text-[10px] font-black transition-all ${selectedYear === y ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 dark:text-white/40 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 {y}
               </button>
@@ -409,9 +409,9 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
                   m.amount > 0 ? 'bg-amber-500/10 border border-amber-300/30 shadow-neo-sm' : 'bg-transparent border border-white/5 neo-button'
                   }`}
               >
-                {m.amount >= 2000 ? <CheckCircle2 size={16} className="text-emerald-500 dark:text-emerald-400" /> : m.amount > 0 ? <Clock size={16} className="text-amber-500 dark:text-amber-300" /> : null}
+                {m.amount >= 2000 ? <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400" /> : m.amount > 0 ? <Clock size={16} className="text-amber-600 dark:text-amber-300" /> : null}
               </button>
-              <span className="text-[8px] font-black text-white/30 uppercase tracking-tighter">{m.label}</span>
+              <span className="text-[8px] font-black text-slate-400 dark:text-white/30 uppercase tracking-tighter">{m.label}</span>
             </div>
           ))}
         </div>
@@ -422,7 +422,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end animate-in fade-in duration-200">
           <div className="w-full bg-[#1e293b] rounded-t-[2rem] p-6 border-t border-white/10 animate-in slide-in-from-bottom-4 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-black">{selectedMonth.month} {selectedMonth.year}</h3>
+              <h3 className="text-lg font-black text-white">{selectedMonth.month} {selectedMonth.year}</h3>
               <button
                 onClick={() => setSelectedMonth(null)}
                 className="p-2 hover:bg-white/5 rounded-lg transition-colors neo-button"
@@ -433,15 +433,15 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
 
             <div className="space-y-4">
               <div className="p-4 rounded-2xl border border-white/5 shadow-neo-flat">
-                <div className="text-sm text-white/50 mb-2">Amount</div>
-                <div className="text-2xl font-black text-cyan-400">{formatCurrency(selectedMonth.amount)}</div>
+                <div className="text-sm text-slate-500 dark:text-white/50 mb-2">Amount</div>
+                <div className="text-2xl font-black text-cyan-600 dark:text-cyan-400">{formatCurrency(selectedMonth.amount)}</div>
               </div>
 
               <div className="p-4 rounded-2xl border border-white/5 shadow-neo-flat">
-                <div className="text-sm text-white/50 mb-2">Status</div>
+                <div className="text-sm text-slate-500 dark:text-white/50 mb-2">Status</div>
                 <div className={`text-lg font-black ${selectedMonth.status === 'paid' ? 'text-emerald-400' :
-                  selectedMonth.status === 'partial' ? 'text-amber-400' :
-                    'text-rose-400'
+                  selectedMonth.status === 'partial' ? 'text-amber-600 dark:text-amber-400' :
+                    'text-rose-600 dark:text-rose-400'
                   }`}>
                   {selectedMonth.status === 'paid' ? '✓ Paid' :
                     selectedMonth.status === 'partial' ? '⊙ Partial' :
@@ -451,15 +451,15 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
 
               {selectedMonth.date && (
                 <div className="p-4 rounded-2xl border border-white/5 shadow-neo-flat">
-                  <div className="text-sm text-white/50 mb-2">Payment Date</div>
-                  <div className="text-lg font-bold">{selectedMonth.date}</div>
+                  <div className="text-sm text-slate-500 dark:text-white/50 mb-2">Payment Date</div>
+                  <div className="text-lg font-bold text-slate-900 dark:text-white">{selectedMonth.date}</div>
                 </div>
               )}
 
               {selectedMonth.mode && (
                 <div className="p-4 rounded-2xl border border-white/5 shadow-neo-flat">
-                  <div className="text-sm text-white/50 mb-2">Mode</div>
-                  <div className="text-lg font-bold">{selectedMonth.mode}</div>
+                  <div className="text-sm text-slate-500 dark:text-white/50 mb-2">Mode</div>
+                  <div className="text-lg font-bold text-slate-900 dark:text-white">{selectedMonth.mode}</div>
                 </div>
               )}
             </div>

@@ -23,8 +23,8 @@ const Login: React.FC<Props> = ({ onSuccess, onCancel }) => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-[#1e293b] rounded-[2.5rem] p-8 text-white shadow-neo-flat relative border border-white/5">
-        <button onClick={onCancel} className="absolute left-6 top-6 p-2 rounded-full hover:bg-white/5 transition-all neo-button">
+      <div className="w-full max-w-md bg-slate-100 dark:bg-[#1e293b] rounded-[2.5rem] p-8 text-slate-900 dark:text-white shadow-neo-flat relative border border-white/5">
+        <button onClick={onCancel} className="absolute left-6 top-6 p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-all neo-button">
           <ArrowLeft size={18} />
         </button>
 
@@ -33,33 +33,33 @@ const Login: React.FC<Props> = ({ onSuccess, onCancel }) => {
             <Shield size={32} />
           </div>
           <h1 className="text-2xl font-bold">Admin Portal</h1>
-          <p className="text-white/50 text-sm">Secure authorization required</p>
+          <p className="text-slate-500 dark:text-white/50 text-sm">Secure authorization required</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-widest text-white/60 ml-1">Username</label>
+            <label className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-white/60 ml-1">Username</label>
             <div className="relative">
-              <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" />
+              <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30" />
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full h-14 bg-black/20 neo-inset rounded-2xl pl-12 pr-4 outline-none focus:ring-2 ring-indigo-500/50 transition-all border-none"
+                className="w-full h-14 bg-slate-100 dark:bg-black/20 neo-inset rounded-2xl pl-12 pr-4 outline-none focus:ring-2 ring-indigo-500/50 transition-all border-none text-slate-900 dark:text-white"
                 placeholder="Enter admin ID"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-widest text-white/60 ml-1">Password</label>
+            <label className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-white/60 ml-1">Password</label>
             <div className="relative">
-              <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" />
+              <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30" />
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full h-14 bg-black/20 neo-inset rounded-2xl pl-12 pr-4 outline-none focus:ring-2 ring-indigo-500/50 transition-all border-none"
+                className="w-full h-14 bg-slate-100 dark:bg-black/20 neo-inset rounded-2xl pl-12 pr-4 outline-none focus:ring-2 ring-indigo-500/50 transition-all border-none text-slate-900 dark:text-white"
                 placeholder="••••••••"
               />
             </div>
@@ -74,7 +74,7 @@ const Login: React.FC<Props> = ({ onSuccess, onCancel }) => {
 
           <button
             type="submit"
-            className="w-full h-14 bg-indigo-600 rounded-2xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 neo-button"
+            className="w-full h-14 bg-indigo-600 rounded-2xl font-bold text-lg text-white hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 neo-button"
           >
             Authenticate
           </button>

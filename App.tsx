@@ -26,6 +26,8 @@ const App: React.FC = () => {
   const [diagnostics, setDiagnostics] = useState<string>('');
   const searchRef = useRef<HTMLDivElement>(null);
 
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
   // App Data State
   const [owners, setOwners] = useState<Owner[]>(initialOwners);
   const [p25List, setP25List] = useState<Payment2025[]>(initialP25);
@@ -40,8 +42,14 @@ const App: React.FC = () => {
   });
 
   useEffect(() => {
-    document.documentElement.classList.add('dark');
-  }, []);
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+    }
+  }, [isDarkMode]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -361,7 +369,7 @@ const App: React.FC = () => {
 
           <h1 className="text-3xl font-black mb-2 tracking-tight">Hijibiji Portal</h1>
           <div className="flex items-center justify-center gap-2 mb-10">
-            <p className="text-white/40 max-w-sm text-xs font-black uppercase tracking-[0.2em]">Financial Registry</p>
+            <p className="text-slate-500 dark:text-white/40 max-w-sm text-xs font-black uppercase tracking-[0.2em]">Financial Registry</p>
             {isCloudLive && (
               <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full shadow-neo-sm">
                 <Cloud size={10} className="text-emerald-500" />
@@ -371,13 +379,13 @@ const App: React.FC = () => {
           </div>
 
           <div className="w-full max-w-md relative mb-10" ref={searchRef}>
-            <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isSearchFocused ? 'text-indigo-400' : 'text-white/30'}`}>
+            <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isSearchFocused ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-white/30'}`}>
               <Search size={20} />
             </div>
             <input
               type="text"
               placeholder="Unit No. (e.g. 1B3)..."
-              className="w-full h-16 bg-transparent neo-inset rounded-[1.5rem] pl-12 pr-12 outline-none focus:ring-2 ring-indigo-500/50 transition-all text-lg placeholder:text-white/20 font-medium"
+              className="w-full h-16 bg-transparent neo-inset rounded-[1.5rem] pl-12 pr-12 outline-none focus:ring-2 ring-indigo-500/50 transition-all text-lg placeholder:text-slate-400 dark:placeholder:text-white/20 font-medium text-slate-900 dark:text-white"
               value={searchQuery}
               onFocus={() => setIsSearchFocused(true)}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -385,7 +393,7 @@ const App: React.FC = () => {
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-all"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/20 hover:text-slate-900 dark:hover:text-white transition-all"
               >
                 <X size={20} />
               </button>
@@ -393,9 +401,9 @@ const App: React.FC = () => {
 
             {(isSearchFocused && searchResults.length > 0) && (
               <div className="absolute top-[4.5rem] left-0 right-0 glass rounded-[1.5rem] overflow-hidden z-50 text-left shadow-2xl border-white/5 animate-in slide-in-from-top-2 max-h-72 overflow-y-auto">
-                <div className="px-4 py-3 border-b border-white/5 bg-white/5 text-[10px] font-black uppercase tracking-widest text-white/40 flex justify-between items-center">
+                <div className="px-4 py-3 border-b border-white/5 bg-white/5 text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/40 flex justify-between items-center">
                   <span>{searchQuery ? 'Matching Units' : 'All Units'}</span>
-                  <span className="text-white/60">{searchResults.length}</span>
+                  <span className="text-slate-400 dark:text-white/60">{searchResults.length}</span>
                 </div>
                 {searchResults.map((owner) => (
                   <button
@@ -404,10 +412,10 @@ const App: React.FC = () => {
                     className="w-full p-5 border-b border-white/5 flex items-center justify-start hover:bg-white/5 transition-colors group"
                   >
                     <div className="flex-1 text-left">
-                      <div className="font-black text-lg group-hover:text-indigo-400 transition-colors">{owner.flatNo}</div>
-                      <div className="text-xs text-white/40 font-bold uppercase tracking-wider">{owner.name}</div>
+                      <div className="font-black text-lg group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors text-slate-900 dark:text-white">{owner.flatNo}</div>
+                      <div className="text-xs text-slate-500 dark:text-white/40 font-bold uppercase tracking-wider">{owner.name}</div>
                     </div>
-                    <ArrowRight size={18} className="text-white/20 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all flex-shrink-0" />
+                    <ArrowRight size={18} className="text-slate-400 dark:text-white/20 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-all flex-shrink-0" />
                   </button>
                 ))}
               </div>
@@ -417,50 +425,47 @@ const App: React.FC = () => {
           <div className="w-full max-w-md grid grid-cols-3 gap-4 mb-12">
             <div className="glass rounded-[1.5rem] p-4 shadow-neo-flat border-white/5 hover:transform hover:-translate-y-1 transition-all group text-center">
               <div className="flex items-center justify-center mb-3">
-                <Users size={20} className="text-indigo-400 group-hover:scale-110 transition-transform" />
+                <Users size={20} className="text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform" />
               </div>
-              <div className="text-2xl font-black text-white mb-2">{owners.length}</div>
-              <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider">Registered Flats</p>
+              <div className="text-2xl font-black text-slate-900 dark:text-white mb-2">{owners.length}</div>
+              <p className="text-slate-500 dark:text-white/40 text-[10px] font-bold uppercase tracking-wider">Registered Flats</p>
             </div>
 
             <div className="glass rounded-[1.5rem] p-4 shadow-neo-flat border-white/5 hover:transform hover:-translate-y-1 transition-all group text-center">
               <div className="flex items-center justify-center mb-3">
-                <CheckCircle size={20} className="text-emerald-400 group-hover:scale-110 transition-transform" />
+                <CheckCircle size={20} className="text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
               </div>
-              <div className="text-2xl font-black text-white mb-2">
+              <div className="text-2xl font-black text-slate-900 dark:text-white mb-2">
                 {calculateQ1PaidCoveredCount()}
               </div>
-              <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider">Q1 Paid / Covered</p>
+              <p className="text-slate-500 dark:text-white/40 text-[10px] font-bold uppercase tracking-wider">Q1 Paid / Covered</p>
             </div>
 
             <div className="glass rounded-[1.5rem] p-4 shadow-neo-flat border-white/5 hover:transform hover:-translate-y-1 transition-all group text-center">
               <div className="flex items-center justify-center mb-3">
-                <TrendingUp size={20} className="text-cyan-400 group-hover:scale-110 transition-transform" />
+                <TrendingUp size={20} className="text-cyan-600 dark:text-cyan-400 group-hover:scale-110 transition-transform" />
               </div>
-              <div className="text-2xl font-black text-white mb-2">
+              <div className="text-2xl font-black text-slate-900 dark:text-white mb-2">
                 {owners.length > 0
                   ? ((calculateQ1PaidCoveredCount() / owners.length) * 100).toFixed(1)
                   : '0'
                 }%
               </div>
-              <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider">Collection Rate</p>
+              <p className="text-slate-500 dark:text-white/40 text-[10px] font-bold uppercase tracking-wider">Collection Rate</p>
             </div>
           </div>
 
 
           <div className="flex flex-col items-center gap-6 mt-4">
             <div className="flex items-center gap-4 animate-in fade-in duration-1000 delay-500">
-              <NeumorphicToggle isChecked={document.documentElement.classList.contains('dark')} onChange={() => {
-                document.documentElement.classList.toggle('dark');
-                document.documentElement.classList.toggle('light');
-              }} />
+              <NeumorphicToggle isChecked={isDarkMode} onChange={setIsDarkMode} />
             </div>
 
             <button
               onClick={() => setView('admin_login')}
-              className="flex items-center gap-3 px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/5 transition-all neo-button"
+              className="flex items-center gap-3 px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/5 transition-all neo-button text-slate-700 dark:text-slate-200"
             >
-              <Shield size={16} className="text-indigo-400" />
+              <Shield size={16} className="text-indigo-600 dark:text-indigo-400" />
               Management Access
             </button>
           </div>

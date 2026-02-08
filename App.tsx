@@ -13,6 +13,7 @@ import { calculateLifetimePaid } from './lib/utils';
 import OwnerDashboard from './components/OwnerDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import Login from './components/Login';
+import NeumorphicToggle from './components/NeumorphicToggle';
 
 const App: React.FC = () => {
   const [view, setView] = useState<'landing' | 'owner' | 'admin_login' | 'admin'>('landing');
@@ -446,13 +447,23 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          <button
-            onClick={() => setView('admin_login')}
-            className="flex items-center gap-3 px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/5 transition-all neo-button"
-          >
-            <Shield size={16} className="text-indigo-400" />
-            Management Access
-          </button>
+
+          <div className="flex flex-col items-center gap-6 mt-4">
+            <div className="flex items-center gap-4 animate-in fade-in duration-1000 delay-500">
+              <NeumorphicToggle isChecked={document.documentElement.classList.contains('dark')} onChange={() => {
+                document.documentElement.classList.toggle('dark');
+                document.documentElement.classList.toggle('light');
+              }} />
+            </div>
+
+            <button
+              onClick={() => setView('admin_login')}
+              className="flex items-center gap-3 px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/5 transition-all neo-button"
+            >
+              <Shield size={16} className="text-indigo-400" />
+              Management Access
+            </button>
+          </div>
         </div>
       )}
       {view === 'owner' && selectedOwnerData && (

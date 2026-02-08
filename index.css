@@ -3,14 +3,32 @@
 @tailwind utilities;
 
 :root {
+    /* DARK MODE (DEFAULT) */
     --bg-deep: #1e293b;
-    /* Slate-800 matches tailwind config */
     --text-main: #f1f5f9;
-    /* Slate-100 */
     --text-muted: #94a3b8;
-    /* Slate-400 */
     --accent-cyan: #06b6d4;
     --accent-indigo: #6366f1;
+
+    --shadow-light: rgba(45, 58, 82, 0.8);
+    --shadow-dark: rgba(16, 21, 33, 0.7);
+    --shadow-inset-light: rgba(45, 58, 82, 0.8);
+    --shadow-inset-dark: rgba(16, 21, 33, 0.7);
+    --border-subtle: rgba(255, 255, 255, 0.05);
+}
+
+:root.light {
+    /* LIGHT MODE */
+    --bg-deep: #e0e5ec;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+
+    /* Light mode neumorphism needs white highlight and dark shadow */
+    --shadow-light: #ffffff;
+    --shadow-dark: #a3b1c6;
+    --shadow-inset-light: #ffffff;
+    --shadow-inset-dark: #a3b1c6;
+    --border-subtle: rgba(255, 255, 255, 0.4);
 }
 
 * {
@@ -32,43 +50,43 @@ body {
     margin: 0;
     overflow-x: hidden;
     min-height: 100vh;
-}
-
-html {
-    color-scheme: dark;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Replaced .glass with .neo-card concepts */
 .glass {
     background: var(--bg-deep);
-    box-shadow: 9px 9px 16px rgb(16 21 33), -9px -9px 16px rgb(45 58 82);
+    box-shadow: 9px 9px 16px var(--shadow-dark), -9px -9px 16px var(--shadow-light);
     border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    /* Subtle border for definition */
+    border: 1px solid var(--border-subtle);
     color: var(--text-main);
+    transition: all 0.3s ease;
 }
 
 .neo-inset {
     background: var(--bg-deep);
-    box-shadow: inset 6px 6px 10px 0 rgba(16, 21, 33, 0.7), inset -6px -6px 10px 0 rgba(45, 58, 82, 0.8);
+    box-shadow: inset 6px 6px 10px 0 var(--shadow-inset-dark), inset -6px -6px 10px 0 var(--shadow-inset-light);
     border: none;
+    color: var(--text-main);
+    transition: all 0.3s ease;
 }
 
 .neo-button {
     background: var(--bg-deep);
-    box-shadow: 6px 6px 10px 0 rgba(16, 21, 33, 0.7), -6px -6px 10px 0 rgba(45, 58, 82, 0.8);
+    box-shadow: 6px 6px 10px 0 var(--shadow-dark), -6px -6px 10px 0 var(--shadow-light);
     transition: all 0.2s ease-in-out;
-    border: 1px solid rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-main);
 }
 
 .neo-button:hover {
     transform: translateY(-2px);
-    box-shadow: 8px 8px 12px 0 rgba(16, 21, 33, 0.8), -8px -8px 12px 0 rgba(45, 58, 82, 0.9);
+    box-shadow: 8px 8px 12px 0 var(--shadow-dark), -8px -8px 12px 0 var(--shadow-light);
 }
 
 .neo-button:active {
     transform: translateY(0);
-    box-shadow: inset 4px 4px 8px 0 rgba(16, 21, 33, 0.7), inset -4px -4px 8px 0 rgba(45, 58, 82, 0.8);
+    box-shadow: inset 4px 4px 8px 0 var(--shadow-inset-dark), inset -4px -4px 8px 0 var(--shadow-inset-light);
 }
 
 /* Orbs - kept but made more subtle to blend with solid background if needed, 

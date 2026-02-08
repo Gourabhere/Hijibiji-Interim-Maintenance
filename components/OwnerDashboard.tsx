@@ -188,7 +188,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack, isDarkMode, onToggleThe
 
   return (
     <div className="min-h-screen p-4 pb-28 max-w-2xl mx-auto space-y-6 animate-in fade-in duration-500">
-      {isQrModalOpen && <QrModal onClose={() => setIsQrModalOpen(false)} />}
+      {isQrModalOpen && <QrModal onClose={() => setIsQrModalOpen(false)} amount={Math.abs(calculated.currentBalance)} />}
 
       {/* Header */}
       <div className="flex items-center gap-4">

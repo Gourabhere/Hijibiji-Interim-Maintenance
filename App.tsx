@@ -26,7 +26,7 @@ const App: React.FC = () => {
   const [diagnostics, setDiagnostics] = useState<string>('');
   const searchRef = useRef<HTMLDivElement>(null);
 
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   // App Data State
   const [owners, setOwners] = useState<Owner[]>(initialOwners);
@@ -435,7 +435,7 @@ const App: React.FC = () => {
               <div className="flex items-center justify-center mb-3">
                 <CheckCircle size={20} className="text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
               </div>
-              <div className="text-2xl font-black text-slate-900 dark:text-white mb-2">
+              <div className="text-2xl font-black text-main mb-2">
                 {calculateQ1PaidCoveredCount()}
               </div>
               <p className="text-muted text-[10px] font-bold uppercase tracking-wider">Q1 Paid / Covered</p>
@@ -445,7 +445,7 @@ const App: React.FC = () => {
               <div className="flex items-center justify-center mb-3">
                 <TrendingUp size={20} className="text-cyan-600 dark:text-cyan-400 group-hover:scale-110 transition-transform" />
               </div>
-              <div className="text-2xl font-black text-slate-900 dark:text-white mb-2">
+              <div className="text-2xl font-black text-main mb-2">
                 {owners.length > 0
                   ? ((calculateQ1PaidCoveredCount() / owners.length) * 100).toFixed(1)
                   : '0'

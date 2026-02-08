@@ -17,6 +17,7 @@ import { upsertOwners, upsertPayments2026, upsertPayments2025, fetchAllData } fr
 import BalanceSheet from './BalanceSheet';
 import DataDebugTable from './DataDebugTable';
 import EditPaymentModal from './EditPaymentModal';
+import NeumorphicToggle from './NeumorphicToggle';
 
 interface Props {
   owners: Owner[];
@@ -28,10 +29,12 @@ interface Props {
   expenses2025?: Record<string, number>;
   expenseReport?: any[];
   onLogout: () => void;
+  isDarkMode: boolean;
+  onToggleTheme: (isDark: boolean) => void;
 }
 
 const AdminDashboard: React.FC<Props> = ({
-  owners, p25, p26, setOwners, setP25, setP26, expenses2025, expenseReport, onLogout
+  owners, p25, p26, setOwners, setP25, setP26, expenses2025, expenseReport, onLogout, isDarkMode, onToggleTheme
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'owners' | 'sync' | 'ai' | 'debug'>('overview');
   const [searchTerm, setSearchTerm] = useState('');
@@ -201,7 +204,10 @@ const AdminDashboard: React.FC<Props> = ({
             </button>
           ))}
         </nav>
-        <div className={`mt-12 pt-8 border-t border-white/5 ${isSidebarCollapsed ? 'flex justify-center' : ''}`}>
+        <div className={`mt-12 pt-8 border-t border-white/5 ${isSidebarCollapsed ? 'flex flex-col items-center gap-4' : 'space-y-4'}`}>
+          <div className={`${isSidebarCollapsed ? '' : 'px-6'}`}>
+            <NeumorphicToggle isChecked={isDarkMode} onChange={onToggleTheme} />
+          </div>
           <button
             onClick={onLogout}
             className={`flex items-center ${isSidebarCollapsed ? 'justify-center p-4' : 'gap-4 px-6 py-4 w-full'} text-[11px] font-black uppercase tracking-widest text-rose-600 dark:text-rose-400 hover:bg-rose-400/10 rounded-2xl transition-all neo-button`}

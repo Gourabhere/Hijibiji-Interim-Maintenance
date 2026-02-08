@@ -1,13 +1,16 @@
 
 import React, { useState } from 'react';
 import { Shield, Lock, User, ArrowLeft, AlertCircle } from 'lucide-react';
+import NeumorphicToggle from './NeumorphicToggle';
 
 interface Props {
   onSuccess: () => void;
   onCancel: () => void;
+  isDarkMode: boolean;
+  onToggleTheme: (isDark: boolean) => void;
 }
 
-const Login: React.FC<Props> = ({ onSuccess, onCancel }) => {
+const Login: React.FC<Props> = ({ onSuccess, onCancel, isDarkMode, onToggleTheme }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -27,6 +30,9 @@ const Login: React.FC<Props> = ({ onSuccess, onCancel }) => {
         <button onClick={onCancel} className="absolute left-6 top-6 p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-all neo-button">
           <ArrowLeft size={18} />
         </button>
+        <div className="absolute right-6 top-6">
+          <NeumorphicToggle isChecked={isDarkMode} onChange={onToggleTheme} />
+        </div>
 
         <div className="flex flex-col items-center mt-6 mb-10">
           <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg mb-4 neo-button">

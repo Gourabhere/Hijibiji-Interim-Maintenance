@@ -475,12 +475,16 @@ const App: React.FC = () => {
         <OwnerDashboard
           data={selectedOwnerData}
           onBack={() => { setView('landing'); setSearchQuery(''); setIsSearchFocused(false); }}
+          isDarkMode={isDarkMode}
+          onToggleTheme={setIsDarkMode}
         />
       )}
       {view === 'admin_login' && (
         <Login
           onSuccess={() => setView('admin')}
           onCancel={() => setView('landing')}
+          isDarkMode={isDarkMode}
+          onToggleTheme={setIsDarkMode}
         />
       )}
       {view === 'admin' && (
@@ -494,6 +498,8 @@ const App: React.FC = () => {
           expenses2025={expenses2025}
           expenseReport={expenseReport}
           onLogout={() => setView('landing')}
+          isDarkMode={isDarkMode}
+          onToggleTheme={setIsDarkMode}
         />
       )}
     </main>

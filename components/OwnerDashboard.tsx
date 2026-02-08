@@ -7,10 +7,13 @@ import {
 import { DashboardData } from '../types';
 import { formatCurrency } from '../utils';
 import QrModal from './QrModal';
+import NeumorphicToggle from './NeumorphicToggle';
 
 interface Props {
   data: DashboardData;
   onBack: () => void;
+  isDarkMode: boolean;
+  onToggleTheme: (isDark: boolean) => void;
 }
 
 interface Tooltip {
@@ -56,7 +59,7 @@ const tooltips: Record<string, Tooltip> = {
   }
 };
 
-const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
+const OwnerDashboard: React.FC<Props> = ({ data, onBack, isDarkMode, onToggleTheme }) => {
   const [selectedYear, setSelectedYear] = useState<2025 | 2026>(2026);
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<MonthDetail | null>(null);
@@ -195,6 +198,9 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
         <div>
           <h1 className="text-xl font-black tracking-tight">Flat {owner.flatNo}</h1>
           <p className="text-[10px] text-cyan-600 dark:text-cyan-400 uppercase font-black tracking-[0.2em]">{owner.name}</p>
+        </div>
+        <div className="ml-auto">
+          <NeumorphicToggle isChecked={isDarkMode} onChange={onToggleTheme} />
         </div>
       </div>
 

@@ -6,6 +6,7 @@ export default {
     "./components/**/*.{tsx,ts}",
     "./lib/**/*.{tsx,ts}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {

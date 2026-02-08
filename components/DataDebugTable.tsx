@@ -45,7 +45,7 @@ const DataDebugTable: React.FC<Props> = ({ owners, p25List, p26List, expenses202
       {/* Collapsed Header */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full mb-6 p-4 glass rounded-2xl border border-white/10 flex items-center justify-between hover:border-white/20 transition-all"
+        className="w-full mb-6 p-4 rounded-2xl border border-white/5 flex items-center justify-between hover:bg-white/5 transition-all neo-button"
       >
         <div className="flex items-center gap-3">
           <span className="text-lg font-bold text-white">📊 Data Debug Table</span>

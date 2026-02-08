@@ -353,7 +353,7 @@ const App: React.FC = () => {
       {view === 'landing' && (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-700">
           <div className="mb-8 animate-in zoom-in duration-700">
-            <div className="w-32 h-32 glass rounded-[3rem] flex items-center justify-center mx-auto shadow-2xl border-white/20 p-6">
+            <div className="w-32 h-32 glass rounded-[3rem] flex items-center justify-center mx-auto shadow-neo-flat border-white/5 p-6 neo-convex">
               <img src="/1000551042-removebg-preview.png" alt="Hijibiji Logo" className="w-full h-full object-contain" />
             </div>
           </div>
@@ -362,7 +362,7 @@ const App: React.FC = () => {
           <div className="flex items-center justify-center gap-2 mb-10">
             <p className="text-white/40 max-w-sm text-xs font-black uppercase tracking-[0.2em]">Financial Registry</p>
             {isCloudLive && (
-              <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full shadow-neo-sm">
                 <Cloud size={10} className="text-emerald-500" />
                 <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Cloud Live</span>
               </div>
@@ -376,7 +376,7 @@ const App: React.FC = () => {
             <input
               type="text"
               placeholder="Unit No. (e.g. 1B3)..."
-              className="w-full h-16 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[1.5rem] pl-12 pr-12 outline-none focus:ring-2 ring-indigo-500/50 transition-all text-lg placeholder:text-white/20 font-medium"
+              className="w-full h-16 bg-transparent neo-inset rounded-[1.5rem] pl-12 pr-12 outline-none focus:ring-2 ring-indigo-500/50 transition-all text-lg placeholder:text-white/20 font-medium"
               value={searchQuery}
               onFocus={() => setIsSearchFocused(true)}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -391,7 +391,7 @@ const App: React.FC = () => {
             )}
 
             {(isSearchFocused && searchResults.length > 0) && (
-              <div className="absolute top-[4.5rem] left-0 right-0 glass rounded-[1.5rem] overflow-hidden z-50 text-left shadow-2xl border-white/10 animate-in slide-in-from-top-2 max-h-72 overflow-y-auto">
+              <div className="absolute top-[4.5rem] left-0 right-0 glass rounded-[1.5rem] overflow-hidden z-50 text-left shadow-2xl border-white/5 animate-in slide-in-from-top-2 max-h-72 overflow-y-auto">
                 <div className="px-4 py-3 border-b border-white/5 bg-white/5 text-[10px] font-black uppercase tracking-widest text-white/40 flex justify-between items-center">
                   <span>{searchQuery ? 'Matching Units' : 'All Units'}</span>
                   <span className="text-white/60">{searchResults.length}</span>
@@ -400,7 +400,7 @@ const App: React.FC = () => {
                   <button
                     key={owner.flatNo}
                     onClick={() => handleSelectOwner(owner)}
-                    className="w-full p-5 border-b border-white/5 flex items-center justify-start hover:bg-white/10 transition-colors group"
+                    className="w-full p-5 border-b border-white/5 flex items-center justify-start hover:bg-white/5 transition-colors group"
                   >
                     <div className="flex-1 text-left">
                       <div className="font-black text-lg group-hover:text-indigo-400 transition-colors">{owner.flatNo}</div>
@@ -414,7 +414,7 @@ const App: React.FC = () => {
           </div>
 
           <div className="w-full max-w-md grid grid-cols-3 gap-4 mb-12">
-            <div className="glass rounded-[1.5rem] p-4 shadow-2xl border-white/10 hover:shadow-xl hover:border-white/20 transition-all group text-center">
+            <div className="glass rounded-[1.5rem] p-4 shadow-neo-flat border-white/5 hover:transform hover:-translate-y-1 transition-all group text-center">
               <div className="flex items-center justify-center mb-3">
                 <Users size={20} className="text-indigo-400 group-hover:scale-110 transition-transform" />
               </div>
@@ -422,7 +422,7 @@ const App: React.FC = () => {
               <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider">Registered Flats</p>
             </div>
 
-            <div className="glass rounded-[1.5rem] p-4 shadow-2xl border-white/10 hover:shadow-xl hover:border-white/20 transition-all group text-center">
+            <div className="glass rounded-[1.5rem] p-4 shadow-neo-flat border-white/5 hover:transform hover:-translate-y-1 transition-all group text-center">
               <div className="flex items-center justify-center mb-3">
                 <CheckCircle size={20} className="text-emerald-400 group-hover:scale-110 transition-transform" />
               </div>
@@ -432,7 +432,7 @@ const App: React.FC = () => {
               <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider">Q1 Paid / Covered</p>
             </div>
 
-            <div className="glass rounded-[1.5rem] p-4 shadow-2xl border-white/10 hover:shadow-xl hover:border-white/20 transition-all group text-center">
+            <div className="glass rounded-[1.5rem] p-4 shadow-neo-flat border-white/5 hover:transform hover:-translate-y-1 transition-all group text-center">
               <div className="flex items-center justify-center mb-3">
                 <TrendingUp size={20} className="text-cyan-400 group-hover:scale-110 transition-transform" />
               </div>
@@ -448,7 +448,7 @@ const App: React.FC = () => {
 
           <button
             onClick={() => setView('admin_login')}
-            className="flex items-center gap-3 px-8 py-4 glass rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/10 transition-all neo-button"
+            className="flex items-center gap-3 px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/5 transition-all neo-button"
           >
             <Shield size={16} className="text-indigo-400" />
             Management Access

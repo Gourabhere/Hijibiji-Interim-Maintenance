@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   ArrowLeft, Wallet, Info, CheckCircle2, AlertCircle,
@@ -108,12 +107,12 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
     switch (status) {
       case 'Covered':
       case 'Paid':
-        return 'bg-emerald-600/40 border-emerald-400/30 text-emerald-100';
+        return 'bg-emerald-600/10 border-emerald-500/20 text-emerald-100 shadow-neo-flat';
       case 'Partial Covered':
       case 'Partial Paid':
-        return 'bg-amber-600/40 border-amber-400/30 text-amber-100';
+        return 'bg-amber-600/10 border-amber-500/20 text-amber-100 shadow-neo-flat';
       default:
-        return 'bg-rose-600/40 border-rose-400/30 text-rose-100';
+        return 'bg-rose-600/10 border-rose-500/20 text-rose-100 shadow-neo-flat';
     }
   };
 
@@ -190,7 +189,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
 
       {/* Header */}
       <div className="flex items-center gap-4">
-        <button onClick={onBack} className="p-3 glass rounded-2xl hover:bg-white/10 transition-all neo-button">
+        <button onClick={onBack} className="p-3 rounded-2xl hover:bg-white/5 transition-all neo-button">
           <ArrowLeft size={20} />
         </button>
         <div>
@@ -201,7 +200,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
 
       {/* Tooltip Display */}
       {activeTooltip && tooltips[activeTooltip] && (
-        <div className="glass rounded-[1.5rem] p-4 border border-indigo-400/30 bg-indigo-500/10 animate-in slide-in-from-top-2">
+        <div className="rounded-[1.5rem] p-4 border border-indigo-400/30 bg-indigo-500/10 animate-in slide-in-from-top-2 shadow-neo-sm">
           <div className="flex items-start justify-between gap-3">
             <div>
               <h4 className="text-sm font-black text-indigo-300 mb-1">{tooltips[activeTooltip].title}</h4>
@@ -221,13 +220,13 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
       {getNotifications().map((notif, idx) => (
         <div
           key={idx}
-          className={`rounded-[1.5rem] p-4 border animate-in slide-in-from-top-2 ${notif.type === 'success'
-            ? 'glass border-emerald-400/30 bg-emerald-500/10'
+          className={`rounded-[1.5rem] p-4 border animate-in slide-in-from-top-2 shadow-neo-sm ${notif.type === 'success'
+            ? 'border-emerald-400/30 bg-emerald-500/10'
             : notif.type === 'warning'
-              ? 'glass border-amber-400/30 bg-amber-500/10'
+              ? 'border-amber-400/30 bg-amber-500/10'
               : notif.type === 'alert'
-                ? 'glass border-rose-400/30 bg-rose-500/10'
-                : 'glass border-cyan-400/30 bg-cyan-500/10'
+                ? 'border-rose-400/30 bg-rose-500/10'
+                : 'border-cyan-400/30 bg-cyan-500/10'
             }`}
         >
           <div className="flex items-start gap-3">
@@ -262,7 +261,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
 
       {/* Primary Status Widget */}
       <div className="grid grid-cols-1 gap-4">
-        <div className={`rounded-[2.5rem] p-6 border-2 shadow-2xl relative overflow-hidden transition-all duration-500 ${getStatusStyles(calculated.q1Status)}`}>
+        <div className={`rounded-[2.5rem] p-6 border-2 relative overflow-hidden transition-all duration-500 ${getStatusStyles(calculated.q1Status)}`}>
           <div className="absolute top-0 right-0 p-8 opacity-10">
             {getStatusIcon(calculated.q1Status)}
           </div>
@@ -279,7 +278,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
               <div className="mt-4 mb-6">
                 <button
                   onClick={() => setIsQrModalOpen(true)}
-                  className="w-full py-4 bg-gradient-to-r from-cyan-500 to-indigo-500 text-white font-black rounded-2xl transition-all neo-button flex items-center justify-center gap-2"
+                  className="w-full py-4 bg-gradient-to-r from-cyan-500 to-indigo-500 text-white font-black rounded-2xl transition-all neo-button flex items-center justify-center gap-2 shadow-lg"
                 >
                   <CreditCard size={16} />
                   Pay Now
@@ -288,7 +287,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
             )}
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-3 bg-white/10 rounded-2xl border border-white/10 backdrop-blur-md">
+              <div className="p-3 bg-black/20 rounded-2xl border border-white/5 neo-inset">
                 <div className="text-[8px] font-black uppercase opacity-60 mb-1 flex items-center gap-1">
                   <History size={10} /> Lifetime Paid
                   <Tooltip id="lifetime">
@@ -297,7 +296,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
                 </div>
                 <div className="text-xl font-black text-indigo-200">{formatCurrency(calculated.maintenancePaidTillDate)}</div>
               </div>
-              <div className="p-3 bg-white/10 rounded-2xl border border-white/10 backdrop-blur-md text-right">
+              <div className="p-3 bg-black/20 rounded-2xl border border-white/5 neo-inset text-right">
                 <div className="text-[8px] font-black uppercase opacity-60 mb-1 flex items-center justify-end gap-1">
                   2025 Shared Exp. <Wallet size={10} />
                   <Tooltip id="expenseShare">
@@ -313,7 +312,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
 
       {/* Financial Breakdown */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="glass rounded-[2rem] p-5">
+        <div className="rounded-[2rem] p-5 shadow-neo-flat border border-white/5">
           <div className="text-[9px] text-white/50 mb-1 uppercase font-black tracking-widest flex items-center gap-1">
             2025 carry forward
             <Tooltip id="carryForward">
@@ -324,7 +323,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
           <div className="text-[8px] mt-2 text-white/30 font-bold uppercase tracking-wider">Balance from 2025</div>
         </div>
 
-        <div className={`glass rounded-[2rem] p-5 transition-colors duration-500 ${isDebt ? 'bg-rose-500/5' : 'bg-emerald-500/5'}`}>
+        <div className={`rounded-[2rem] p-5 transition-colors duration-500 shadow-neo-flat border border-white/5 ${isDebt ? 'bg-rose-500/5' : 'bg-emerald-500/5'}`}>
           <div className="text-[9px] text-white/50 mb-1 uppercase font-black tracking-widest flex items-center gap-1">
             {isSurplus ? 'Surplus Credit' : isDebt ? 'Amount Outstanding' : 'Balance Settled'}
             {isSurplus ? <TrendingUp size={10} /> : isDebt ? <TrendingDown size={10} /> : null}
@@ -343,13 +342,13 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
 
       {/* Coverage Progress */}
       {selectedYear === 2026 && (
-        <div className="glass rounded-[2rem] p-5">
+        <div className="rounded-[2rem] p-5 shadow-neo-flat border border-white/5">
           <div className="text-[9px] text-white/50 mb-3 uppercase font-black tracking-widest">Coverage Progress</div>
           <div className="flex items-center gap-4">
             <div className="flex-1">
-              <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+              <div className="w-full neo-inset rounded-full h-3 overflow-hidden bg-black/20">
                 <div
-                  className="h-full bg-gradient-to-r from-indigo-500 to-cyan-500 transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-indigo-500 to-cyan-500 transition-all duration-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]"
                   style={{ width: `${coveragePercent}%` }}
                 ></div>
               </div>
@@ -363,9 +362,9 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
       )}
 
       {/* Facility Status */}
-      <div className="glass rounded-[2rem] p-6">
+      <div className="rounded-[2rem] p-6 shadow-neo-flat border border-white/5">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-cyan-500/20 rounded-xl text-cyan-600 dark:text-cyan-400"><Activity size={18} /></div>
+          <div className="p-2 bg-cyan-500/20 rounded-xl text-cyan-600 dark:text-cyan-400 shadow-neo-sm"><Activity size={18} /></div>
           <h3 className="font-black text-xs uppercase tracking-widest text-white/50">Society Pulse</h3>
           <span className="text-[8px] text-white/30 ml-auto">Updated now</span>
         </div>
@@ -375,7 +374,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
             { label: 'Water', status: 'Stable', icon: Droplets, color: 'text-sky-500 dark:text-sky-400' },
             { label: 'Security', status: 'Active', icon: Shield, color: 'text-indigo-500 dark:text-indigo-400' },
           ].map((f, i) => (
-            <div key={i} className="bg-white/5 p-4 rounded-2xl border border-white/5 hover:border-white/20 flex flex-col items-center text-center transition-all duration-300 cursor-pointer hover:bg-white/10">
+            <div key={i} className="bg-transparent p-4 rounded-2xl border border-white/5 hover:border-white/20 flex flex-col items-center text-center transition-all duration-300 cursor-pointer neo-button">
               <f.icon size={20} className={`mb-2 ${f.color}`} />
               <div className="text-[9px] font-black uppercase tracking-tighter text-white/40 mb-1">{f.label}</div>
               <div className="text-[10px] font-bold text-white">{f.status}</div>
@@ -385,15 +384,15 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
       </div>
 
       {/* Payment History Grid */}
-      <div className="glass rounded-[2.5rem] p-6 shadow-2xl">
+      <div className="rounded-[2.5rem] p-6 shadow-neo-flat border border-white/5">
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-black text-[10px] uppercase tracking-[0.2em] text-white/30">Monthly Ledger</h2>
-          <div className="flex bg-black/40 p-1 rounded-xl border border-white/10 transition-colors duration-500">
+          <div className="flex bg-black/20 neo-inset p-1 rounded-xl transition-colors duration-500">
             {[2025, 2026].map(y => (
               <button
                 key={y}
                 onClick={() => setSelectedYear(y as any)}
-                className={`px-5 py-2 rounded-lg text-[10px] font-black transition-all ${selectedYear === y ? 'bg-indigo-600 text-white shadow-xl scale-105' : 'text-white/40 hover:text-white'}`}
+                className={`px-5 py-2 rounded-lg text-[10px] font-black transition-all ${selectedYear === y ? 'bg-indigo-600 text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
               >
                 {y}
               </button>
@@ -406,8 +405,8 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
             <div key={idx} className="flex flex-col items-center group">
               <button
                 onClick={() => handleMonthClick(m)}
-                className={`w-full aspect-square rounded-2xl flex items-center justify-center border-2 transition-all duration-300 mb-2 transform hover:scale-110 cursor-pointer ${m.amount >= 2000 ? 'bg-emerald-500/20 border-emerald-400/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]' :
-                  m.amount > 0 ? 'tile-partial border-amber-300/40 hover:shadow-[0_0_15px_rgba(245,158,11,0.1)]' : 'bg-white/5 border-white/10 hover:border-white/20'
+                className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all duration-300 mb-2 transform hover:scale-110 cursor-pointer ${m.amount >= 2000 ? 'bg-emerald-500/10 border border-emerald-400/30 shadow-neo-sm' :
+                  m.amount > 0 ? 'bg-amber-500/10 border border-amber-300/30 shadow-neo-sm' : 'bg-transparent border border-white/5 neo-button'
                   }`}
               >
                 {m.amount >= 2000 ? <CheckCircle2 size={16} className="text-emerald-500 dark:text-emerald-400" /> : m.amount > 0 ? <Clock size={16} className="text-amber-500 dark:text-amber-300" /> : null}
@@ -421,24 +420,24 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
       {/* Month Detail Modal */}
       {selectedMonth && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end animate-in fade-in duration-200">
-          <div className="w-full glass rounded-t-[2rem] p-6 border border-white/20 border-b-0 animate-in slide-in-from-bottom-4">
+          <div className="w-full bg-[#1e293b] rounded-t-[2rem] p-6 border-t border-white/10 animate-in slide-in-from-bottom-4 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-black">{selectedMonth.month} {selectedMonth.year}</h3>
               <button
                 onClick={() => setSelectedMonth(null)}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                className="p-2 hover:bg-white/5 rounded-lg transition-colors neo-button"
               >
                 <X size={20} />
               </button>
             </div>
 
             <div className="space-y-4">
-              <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+              <div className="p-4 rounded-2xl border border-white/5 shadow-neo-flat">
                 <div className="text-sm text-white/50 mb-2">Amount</div>
                 <div className="text-2xl font-black text-cyan-400">{formatCurrency(selectedMonth.amount)}</div>
               </div>
 
-              <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+              <div className="p-4 rounded-2xl border border-white/5 shadow-neo-flat">
                 <div className="text-sm text-white/50 mb-2">Status</div>
                 <div className={`text-lg font-black ${selectedMonth.status === 'paid' ? 'text-emerald-400' :
                   selectedMonth.status === 'partial' ? 'text-amber-400' :
@@ -451,14 +450,14 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
               </div>
 
               {selectedMonth.date && (
-                <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                <div className="p-4 rounded-2xl border border-white/5 shadow-neo-flat">
                   <div className="text-sm text-white/50 mb-2">Payment Date</div>
                   <div className="text-lg font-bold">{selectedMonth.date}</div>
                 </div>
               )}
 
               {selectedMonth.mode && (
-                <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                <div className="p-4 rounded-2xl border border-white/5 shadow-neo-flat">
                   <div className="text-sm text-white/50 mb-2">Mode</div>
                   <div className="text-lg font-bold">{selectedMonth.mode}</div>
                 </div>
@@ -467,7 +466,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack }) => {
 
             <button
               onClick={() => setSelectedMonth(null)}
-              className="w-full mt-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl transition-all neo-button"
+              className="w-full mt-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl transition-all neo-button shadow-lg"
             >
               Close
             </button>

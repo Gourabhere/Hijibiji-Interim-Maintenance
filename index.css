@@ -3,15 +3,14 @@
 @tailwind utilities;
 
 :root {
+    --bg-deep: #1e293b;
+    /* Slate-800 matches tailwind config */
+    --text-main: #f1f5f9;
+    /* Slate-100 */
+    --text-muted: #94a3b8;
+    /* Slate-400 */
     --accent-cyan: #06b6d4;
     --accent-indigo: #6366f1;
-    --bg-deep: #0f172a;
-    --text-main: #f8fafc;
-    --text-muted: rgba(248, 250, 252, 0.4);
-    --glass-bg: rgba(255, 255, 255, 0.03);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --orb-opacity: 0.4;
-    --shadow-intensity: rgba(0, 0, 0, 0.37);
 }
 
 * {
@@ -39,6 +38,43 @@ html {
     color-scheme: dark;
 }
 
+/* Replaced .glass with .neo-card concepts */
+.glass {
+    background: var(--bg-deep);
+    box-shadow: 9px 9px 16px rgb(16 21 33), -9px -9px 16px rgb(45 58 82);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    /* Subtle border for definition */
+    color: var(--text-main);
+}
+
+.neo-inset {
+    background: var(--bg-deep);
+    box-shadow: inset 6px 6px 10px 0 rgba(16, 21, 33, 0.7), inset -6px -6px 10px 0 rgba(45, 58, 82, 0.8);
+    border: none;
+}
+
+.neo-button {
+    background: var(--bg-deep);
+    box-shadow: 6px 6px 10px 0 rgba(16, 21, 33, 0.7), -6px -6px 10px 0 rgba(45, 58, 82, 0.8);
+    transition: all 0.2s ease-in-out;
+    border: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.neo-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 8px 8px 12px 0 rgba(16, 21, 33, 0.8), -8px -8px 12px 0 rgba(45, 58, 82, 0.9);
+}
+
+.neo-button:active {
+    transform: translateY(0);
+    box-shadow: inset 4px 4px 8px 0 rgba(16, 21, 33, 0.7), inset -4px -4px 8px 0 rgba(45, 58, 82, 0.8);
+}
+
+/* Orbs - kept but made more subtle to blend with solid background if needed, 
+   or removed if we want pure clean neumorphism. 
+   Let's keep them but make them very subtle behind the solid layers. */
+
 .parallax-bg {
     position: fixed;
     top: 0;
@@ -54,8 +90,9 @@ html {
 .orb {
     position: absolute;
     border-radius: 50%;
-    filter: blur(80px);
-    opacity: var(--orb-opacity);
+    filter: blur(100px);
+    opacity: 0.15;
+    /* Reduced opacity */
     animation: float 20s infinite ease-in-out;
 }
 
@@ -65,7 +102,6 @@ html {
     background: var(--accent-indigo);
     top: -10%;
     left: -10%;
-    animation-delay: 0s;
 }
 
 .orb-2 {
@@ -102,26 +138,10 @@ html {
     }
 }
 
-.glass {
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    box-shadow: 0 8px 32px 0 var(--shadow-intensity);
-    color: var(--text-main);
-}
-
 .tile-partial {
-    background: linear-gradient(135deg, rgba(251, 191, 36, 0.4) 0%, rgba(255, 255, 255, 0.05) 100%);
-}
-
-.neo-button {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-}
-
-.neo-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px -10px rgba(99, 102, 241, 0.5);
+    background: var(--bg-deep);
+    /* Consistent background */
+    box-shadow: inset 3px 3px 5px rgba(16, 21, 33, 0.5), inset -3px -3px 5px rgba(45, 58, 82, 0.5);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+    /* Keep amber hint */
 }

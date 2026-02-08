@@ -172,7 +172,7 @@ const AdminDashboard: React.FC<Props> = ({
       {/* Hamburger Menu Button */}
       <button
         onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        className="hidden lg:fixed lg:block top-6 left-6 z-50 p-3 glass rounded-2xl hover:bg-white/10 transition-all neo-button"
+        className="hidden lg:fixed lg:block top-6 left-6 z-50 p-3 rounded-2xl hover:bg-white/5 transition-all neo-button"
         title={isSidebarCollapsed ? 'Expand menu' : 'Collapse menu'}
       >
         {isSidebarCollapsed ? <Menu size={20} /> : <X size={20} />}
@@ -191,8 +191,8 @@ const AdminDashboard: React.FC<Props> = ({
               key={item.id}
               onClick={() => setActiveTab(item.id as any)}
               className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-4'} px-6 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === item.id
-                ? 'bg-white text-indigo-900 shadow-2xl'
-                : 'text-white/40 hover:text-white hover:bg-white/5'
+                ? 'bg-transparent text-indigo-400 shadow-neo-pressed'
+                : 'text-white/40 hover:text-white hover:bg-white/5 neo-button'
                 }`}
               title={isSidebarCollapsed ? item.label : ''}
             >
@@ -204,7 +204,7 @@ const AdminDashboard: React.FC<Props> = ({
         <div className={`mt-12 pt-8 border-t border-white/5 ${isSidebarCollapsed ? 'flex justify-center' : ''}`}>
           <button
             onClick={onLogout}
-            className={`flex items-center ${isSidebarCollapsed ? 'justify-center p-4' : 'gap-4 px-6 py-4 w-full'} text-[11px] font-black uppercase tracking-widest text-rose-400 hover:bg-rose-400/10 rounded-2xl transition-all`}
+            className={`flex items-center ${isSidebarCollapsed ? 'justify-center p-4' : 'gap-4 px-6 py-4 w-full'} text-[11px] font-black uppercase tracking-widest text-rose-400 hover:bg-rose-400/10 rounded-2xl transition-all neo-button`}
             title={isSidebarCollapsed ? 'Logout' : ''}
           >
             <LogOut size={20} />
@@ -216,7 +216,7 @@ const AdminDashboard: React.FC<Props> = ({
       <main className="flex-1 space-y-8 min-w-0 lg:pl-20">
         {activeTab === 'overview' && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="glass rounded-[3rem] p-10 border-white/10 relative overflow-hidden group">
+            <div className="rounded-[3rem] p-10 border border-white/5 relative overflow-hidden group shadow-neo-flat">
               <div className="absolute top-0 right-0 p-8 opacity-5 transform group-hover:scale-110 transition-transform">
                 <TrendingUp size={160} />
               </div>
@@ -226,7 +226,7 @@ const AdminDashboard: React.FC<Props> = ({
                     <h2 className="text-4xl font-black mb-2 tracking-tighter">{collectionRate} %</h2>
                     <p className="text-[11px] font-black uppercase tracking-widest text-white/30 flex items-center gap-2">
                       Total Collection Rate 2025
-                      <span className="inline-flex items-center gap-1 ml-2 px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg text-[9px]">
+                      <span className="inline-flex items-center gap-1 ml-2 px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded-lg text-[9px] shadow-neo-sm">
                         <ArrowUpRight size={12} /> +4.2% vs Jan
                       </span>
                     </p>
@@ -236,13 +236,13 @@ const AdminDashboard: React.FC<Props> = ({
                     <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Current Liquidity</p>
                   </div>
                 </div>
-                <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden flex">
+                <div className="h-3 w-full bg-black/20 neo-inset rounded-full overflow-hidden flex">
                   <div className="h-full bg-indigo-600 shadow-[0_0_20px_rgba(99,102,241,0.4)]" style={{ width: `${collectionRate}%` }}></div>
                 </div>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="glass rounded-[2.5rem] p-8 border-white/10">
+              <div className="rounded-[2.5rem] p-8 border border-white/5 shadow-neo-flat">
                 <h3 className="text-xs font-black uppercase tracking-widest text-white/30 mb-8 flex items-center gap-2">
                   <Users size={16} /> Unit Breakdown
                 </h3>
@@ -254,7 +254,7 @@ const AdminDashboard: React.FC<Props> = ({
                   ✓ {owners.filter(o => o.possessionDate !== 'TBD').length} Occupied
                 </div>
               </div>
-              <div className="glass rounded-[2.5rem] p-8 border-white/10">
+              <div className="rounded-[2.5rem] p-8 border border-white/5 shadow-neo-flat">
                 <h3 className="text-xs font-black uppercase tracking-widest text-white/30 mb-8 flex items-center gap-2">
                   <RefreshCw size={16} /> Maintenance Pulse
                 </h3>
@@ -262,7 +262,7 @@ const AdminDashboard: React.FC<Props> = ({
                   <span className="text-sm font-bold text-white/80">Q1 2026 Collection</span>
                   <div className="flex items-center gap-2">
                     <span className="text-2xl font-black text-cyan-400">{formatCurrency(totalCollected26)}</span>
-                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-cyan-500/20 text-cyan-400 rounded-lg text-[9px]">
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-cyan-500/10 text-cyan-400 rounded-lg text-[9px] shadow-neo-sm">
                       <ArrowUpRight size={12} /> +8.5%
                     </span>
                   </div>
@@ -273,9 +273,9 @@ const AdminDashboard: React.FC<Props> = ({
         )}
 
         {activeTab === 'sync' && (
-          <div className="glass p-12 rounded-[3rem] border-white/10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="p-12 rounded-[3rem] border border-white/5 shadow-neo-flat animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex items-center gap-4 mb-8">
-              <div className="p-3 bg-indigo-500/20 rounded-2xl text-indigo-400">
+              <div className="p-3 bg-indigo-500/10 rounded-2xl text-indigo-400 shadow-neo-sm">
                 <Database size={24} />
               </div>
               <div>
@@ -291,12 +291,12 @@ const AdminDashboard: React.FC<Props> = ({
                     type="text"
                     value={sheetUrl}
                     onChange={(e) => setSheetUrl(e.target.value)}
-                    className="flex-1 h-14 bg-black/30 border border-white/10 rounded-2xl px-6 outline-none focus:ring-2 ring-indigo-500/50 transition-all text-sm font-medium"
+                    className="flex-1 h-14 bg-black/20 neo-inset border border-white/5 rounded-2xl px-6 outline-none focus:ring-2 ring-indigo-500/50 transition-all text-sm font-medium"
                   />
                   <button
                     onClick={handleSync}
                     disabled={isSyncing}
-                    className="h-14 px-8 bg-indigo-600 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-indigo-700 transition-all flex items-center gap-3 disabled:opacity-50"
+                    className="h-14 px-8 bg-indigo-600 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-indigo-700 transition-all flex items-center gap-3 disabled:opacity-50 neo-button shadow-lg"
                   >
                     {isSyncing ? <RefreshCw className="animate-spin" size={16} /> : <RefreshCw size={16} />}
                     Sync Data
@@ -310,7 +310,7 @@ const AdminDashboard: React.FC<Props> = ({
                 <button
                   onClick={handlePersistToCloud}
                   disabled={isPersisting}
-                  className="w-full h-14 bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-emerald-600/30 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                  className="w-full h-14 bg-emerald-600/10 border border-emerald-500/20 text-emerald-400 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-emerald-600/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50 neo-button shadow-neo-sm"
                 >
                   {isPersisting ? <RefreshCw className="animate-spin" size={16} /> : <CloudUpload size={16} />}
                   {isPersisting ? 'Committing Changes...' : 'Persist to Supabase Cloud'}
@@ -321,15 +321,15 @@ const AdminDashboard: React.FC<Props> = ({
         )}
 
         {activeTab === 'ai' && (
-          <div className="glass p-12 rounded-[4rem] border-indigo-500/30 animate-in zoom-in-95 duration-700 relative overflow-hidden">
-            <div className="absolute -top-24 -right-24 w-96 h-96 bg-indigo-600/10 blur-[120px] rounded-full"></div>
+          <div className="p-12 rounded-[4rem] border border-indigo-500/20 shadow-neo-flat animate-in zoom-in-95 duration-700 relative overflow-hidden">
+            <div className="absolute -top-24 -right-24 w-96 h-96 bg-indigo-600/5 blur-[120px] rounded-full"></div>
             <div className="flex flex-col items-center text-center max-w-2xl mx-auto relative z-10">
-              <div className="w-24 h-24 bg-indigo-600 rounded-[2rem] flex items-center justify-center shadow-2xl shadow-indigo-600/50 mb-8 transform -rotate-6 text-white">
+              <div className="w-24 h-24 bg-indigo-600 rounded-[2rem] flex items-center justify-center shadow-2xl shadow-indigo-600/50 mb-8 transform -rotate-6 text-white neo-button">
                 <Sparkles size={48} />
               </div>
               <h2 className="text-3xl font-black mb-4 tracking-tight">Gemini AI Strategist</h2>
               {aiInsight ? (
-                <div className="w-full p-8 bg-white/5 border border-white/10 rounded-[2.5rem] text-left">
+                <div className="w-full p-8 bg-white/5 border border-white/5 rounded-[2.5rem] text-left neo-inset">
                   <p className="text-xl font-medium italic text-indigo-100/90 leading-relaxed">"{aiInsight}"</p>
                 </div>
               ) : (
@@ -347,8 +347,8 @@ const AdminDashboard: React.FC<Props> = ({
         )}
 
         {activeTab === 'owners' && (
-          <div className="glass rounded-[3rem] overflow-hidden border-white/5 shadow-2xl animate-in slide-in-from-right-4 duration-700">
-            <div className="p-8 border-b border-white/10 flex justify-between items-center bg-white/2">
+          <div className="rounded-[3rem] overflow-hidden border border-white/5 shadow-neo-flat animate-in slide-in-from-right-4 duration-700">
+            <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/2">
               <h3 className="font-black text-xs uppercase tracking-widest text-white/40">Unit Registry</h3>
               <div className="relative w-64">
                 <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" />
@@ -357,7 +357,7 @@ const AdminDashboard: React.FC<Props> = ({
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                   placeholder="Search name, flat, or date..."
-                  className="w-full bg-white/5 border border-white/10 text-xs font-bold rounded-xl pl-12 py-3 outline-none focus:ring-2 ring-indigo-500/30 transition-all"
+                  className="w-full bg-black/20 neo-inset border border-white/5 text-xs font-bold rounded-xl pl-12 py-3 outline-none focus:ring-2 ring-indigo-500/30 transition-all"
                 />
               </div>
             </div>
@@ -385,7 +385,7 @@ const AdminDashboard: React.FC<Props> = ({
                               setShowEditModal(true);
                             }
                           }}
-                          className="p-2.5 glass rounded-xl text-white/20 group-hover:text-cyan-400 transition-all neo-button"
+                          className="p-2.5 rounded-xl text-white/20 group-hover:text-cyan-400 transition-all neo-button"
                         >
                           <ArrowUpRight size={16} />
                         </button>
@@ -406,7 +406,7 @@ const AdminDashboard: React.FC<Props> = ({
         )}
 
         {activeTab === 'debug' && (
-          <div className="glass rounded-[3rem] overflow-hidden border-white/5 shadow-2xl animate-in slide-in-from-right-4 duration-700 p-8">
+          <div className="rounded-[3rem] overflow-hidden border border-white/5 shadow-neo-flat animate-in slide-in-from-right-4 duration-700 p-8">
             <h3 className="font-black text-xs uppercase tracking-widest text-white/40 mb-6">Data Debug & Inspection</h3>
             <DataDebugTable owners={owners} p25List={p25} p26List={p26} expenses2025={expenses2025} expenseReport={expenseReport} />
           </div>

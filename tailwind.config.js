@@ -14,6 +14,8 @@ export default {
         'neo-dark': '#1e293b', // Slate-800, good base for dark neo
         'neo-dark-shadow-light': '#2d3d56', // Lighter shadow for top-left
         'neo-dark-shadow-dark': '#0f151e', // Darker shadow for bottom-right
+        'main': 'var(--text-main)',
+        'muted': 'var(--text-muted)',
       },
       boxShadow: {
         'neo-flat': '8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light)',

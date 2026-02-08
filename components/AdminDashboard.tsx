@@ -195,7 +195,7 @@ const AdminDashboard: React.FC<Props> = ({
               onClick={() => setActiveTab(item.id as any)}
               className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-4'} px-6 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === item.id
                 ? 'bg-transparent text-indigo-600 dark:text-indigo-400 shadow-neo-pressed'
-                : 'text-slate-400 dark:text-white/40 hover:text-slate-900 dark:hover:text-white hover:bg-white/5 neo-button'
+                : 'text-slate-500 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-white/5 neo-button'
                 }`}
               title={isSidebarCollapsed ? item.label : ''}
             >
@@ -210,7 +210,7 @@ const AdminDashboard: React.FC<Props> = ({
           </div>
           <button
             onClick={onLogout}
-            className={`flex items-center ${isSidebarCollapsed ? 'justify-center p-4' : 'gap-4 px-6 py-4 w-full'} text-[11px] font-black uppercase tracking-widest text-rose-600 dark:text-rose-400 hover:bg-rose-400/10 rounded-2xl transition-all neo-button`}
+            className={`flex items-center ${isSidebarCollapsed ? 'justify-center p-4' : 'gap-4 px-6 py-4 w-full'} text-[11px] font-black uppercase tracking-widest text-rose-700 dark:text-rose-300 hover:bg-rose-400/10 rounded-2xl transition-all neo-button`}
             title={isSidebarCollapsed ? 'Logout' : ''}
           >
             <LogOut size={20} />
@@ -230,7 +230,7 @@ const AdminDashboard: React.FC<Props> = ({
                 <div className="flex justify-between items-end mb-6">
                   <div>
                     <h2 className="text-4xl font-black mb-2 tracking-tighter">{collectionRate} %</h2>
-                    <p className="text-[11px] font-black uppercase tracking-widest text-slate-500 dark:text-white/30 flex items-center gap-2">
+                    <p className="text-[11px] font-black uppercase tracking-widest text-slate-600 dark:text-white/50 flex items-center gap-2">
                       Total Collection Rate 2025
                       <span className="inline-flex items-center gap-1 ml-2 px-2 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg text-[9px] shadow-neo-sm">
                         <ArrowUpRight size={12} /> +4.2% vs Jan
@@ -239,7 +239,7 @@ const AdminDashboard: React.FC<Props> = ({
                   </div>
                   <div className="text-right">
                     <div className="text-xl font-black text-emerald-600 dark:text-emerald-400">{formatCurrency(totalCollected25)}</div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-white/20">Current Liquidity</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/40">Current Liquidity</p>
                   </div>
                 </div>
                 <div className="h-3 w-full bg-black/20 neo-inset rounded-full overflow-hidden flex">
@@ -256,12 +256,12 @@ const AdminDashboard: React.FC<Props> = ({
                   <span className="text-sm font-bold text-slate-700 dark:text-white/80">Total Registered</span>
                   <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400">{owners.length}</span>
                 </div>
-                <div className="text-[9px] text-slate-500 dark:text-white/50 mt-3">
+                <div className="text-[9px] text-slate-600 dark:text-white/60 mt-3">
                   ✓ {owners.filter(o => o.possessionDate !== 'TBD').length} Occupied
                 </div>
               </div>
               <div className="rounded-[2.5rem] p-8 border border-white/5 shadow-neo-flat">
-                <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-white/30 mb-8 flex items-center gap-2">
+                <h3 className="text-xs font-black uppercase tracking-widest text-slate-600 dark:text-white/50 mb-8 flex items-center gap-2">
                   <RefreshCw size={16} /> Maintenance Pulse
                 </h3>
                 <div className="flex items-center justify-between mb-2">
@@ -286,12 +286,12 @@ const AdminDashboard: React.FC<Props> = ({
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Sync Hub</h2>
-                <p className="text-slate-500 dark:text-white/40 text-sm">Update application data from Google Sheets</p>
+                <p className="text-slate-600 dark:text-white/60 text-sm">Update application data from Google Sheets</p>
               </div>
             </div>
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/30 ml-1">Spreadsheet Public URL</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-white/50 ml-1">Spreadsheet Public URL</label>
                 <div className="flex gap-4">
                   <input
                     type="text"

@@ -39,14 +39,14 @@ const Login: React.FC<Props> = ({ onSuccess, onCancel, isDarkMode, onToggleTheme
             <Shield size={32} />
           </div>
           <h1 className="text-2xl font-bold">Admin Portal</h1>
-          <p className="text-slate-500 dark:text-white/50 text-sm">Secure authorization required</p>
+          <p className="text-slate-600 dark:text-white/60 text-sm">Secure authorization required</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-white/60 ml-1">Username</label>
+            <label className="text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-white/70 ml-1">Username</label>
             <div className="relative">
-              <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30" />
+              <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-white/40" />
               <input
                 type="text"
                 value={username}
@@ -58,9 +58,9 @@ const Login: React.FC<Props> = ({ onSuccess, onCancel, isDarkMode, onToggleTheme
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-white/60 ml-1">Password</label>
+            <label className="text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-white/70 ml-1">Password</label>
             <div className="relative">
-              <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30" />
+              <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-white/40" />
               <input
                 type="password"
                 value={password}

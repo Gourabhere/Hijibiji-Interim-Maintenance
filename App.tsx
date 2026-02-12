@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { App as CapApp } from '@capacitor/app';
 import { Search, Shield, User, Info, ArrowRight, X, RefreshCw, Cloud, Users, CheckCircle, TrendingUp } from 'lucide-react';
 import {
   owners as initialOwners,
@@ -139,6 +140,31 @@ const App: React.FC = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Sync Android hardware back button with app navigation
+  const handleBack = useCallback(() => {
+    if (view === 'owner') {
+      setView('landing');
+      setSearchQuery('');
+      setIsSearchFocused(false);
+    } else if (view === 'admin_login') {
+      setView('landing');
+    } else if (view === 'admin') {
+      setView('landing');
+    } else {
+      // On landing page, minimize the app
+      CapApp.minimizeApp();
+    }
+  }, [view]);
+
+  useEffect(() => {
+    const listener = CapApp.addListener('backButton', () => {
+      handleBack();
+    });
+    return () => {
+      listener.then(l => l.remove());
+    };
+  }, [handleBack]);
 
   const calculateQ1StatusFromRemarks = (remarks: string): 'Covered' | 'Partial Covered' | 'Paid' | 'Partial Paid' | 'Due' => {
     if (!remarks || typeof remarks !== 'string' || remarks.trim() === '') {

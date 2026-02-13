@@ -2,7 +2,7 @@ from PIL import Image
 import os
 
 base = r'c:\Users\abc\Hijibiji-Interim-Maintenance-1\android\app\src\main\res'
-logo_path = r'c:\Users\abc\Hijibiji-Interim-Maintenance-1\hijibiji_logo.png'
+logo_path = r'c:\Users\abc\Hijibiji-Interim-Maintenance-1\resources\icon.png'
 
 dirs = [
     'drawable',

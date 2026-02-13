@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">HijibijiMaintenancePortal</string>
-    <string name="title_activity_main">HijibijiMaintenancePortal</string>
+    <string name="app_name">Hijibiji</string>
+    <string name="title_activity_main">Hijibiji</string>
     <string name="package_name">com.hijibiji.maintenance</string>
     <string name="custom_url_scheme">com.hijibiji.maintenance</string>
 </resources>

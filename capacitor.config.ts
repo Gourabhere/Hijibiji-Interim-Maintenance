@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.hijibiji.maintenance',
-  appName: 'HijibijiMaintenancePortal',
+  appName: 'Hijibiji',
   webDir: 'dist'
 };
 

@@ -32,7 +32,12 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = 'https://bhdrlzaqejkrqsozbcbr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJoZHJsemFxZWprcnFzb3piY2JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4NzM4OTAsImV4cCI6MjA4NTQ0OTg5MH0.W1kWS99fv-QjQI_eVE3XvPhMWbgMQoGqOtaUHcVlP9s';
 
+// Secondary Project: vmtklhmiuxbfxmhpnjoi (Task Logs)
+const SUPABASE_TASKS_URL = 'https://vmtklhmiuxbfxmhpnjoi.supabase.co';
+const SUPABASE_TASKS_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZtdGtsaG1pdXhiZnhtaHBuam9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY5MTgwMTcsImV4cCI6MjA4MjQ5NDAxN30.62uIPu8sarcMIZv4OgRqplmxVmOxqbTYIPIv1vv4ICo';
+
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+export const supabaseTasks = createClient(SUPABASE_TASKS_URL, SUPABASE_TASKS_ANON_KEY);
 
 // Test connection and show diagnostic info
 export const testConnection = async () => {
@@ -40,6 +45,10 @@ export const testConnection = async () => {
     // First test: just authenticate
     const { error: authError } = await supabase.auth.getSession();
     if (authError) { /* silent failure */ }
+
+    // Test secondary connection
+    const { error: taskAuthError } = await supabaseTasks.auth.getSession();
+    if (taskAuthError) { console.warn('Secondary Supabase auth failed'); }
 
     // Test each table and show column names
     const tables = ['Registered_Owner_Details', 'Collections_2025', 'Collections_2026', 'Maintenance_Config'];
@@ -59,6 +68,32 @@ export const testConnection = async () => {
   } catch (err: any) {
     return false;
   }
+};
+
+// Smart column name detection with detailed logging
+export const detectColumn = (obj: any, ...possibleNames: string[]) => {
+  // First, try exact matches
+  for (const name of possibleNames) {
+    if (obj && obj[name] !== undefined) {
+      return obj[name];
+    }
+  }
+
+  // If no exact match, try case-insensitive search
+  if (obj) {
+    const objKeys = Object.keys(obj);
+    for (const possibleName of possibleNames) {
+      const lowerPossible = possibleName.toLowerCase().replace(/[_\s]/g, '');
+      for (const objKey of objKeys) {
+        const lowerKey = objKey.toLowerCase().replace(/[_\s]/g, '');
+        if (lowerPossible === lowerKey && obj[objKey] !== undefined) {
+          return obj[objKey];
+        }
+      }
+    }
+  }
+
+  return null;
 };
 
 export const fetchAllData = async () => {
@@ -133,31 +168,9 @@ export const fetchAllData = async () => {
       return null;
     }
 
-    // Smart column name detection with detailed logging
-    const detectColumn = (obj: any, ...possibleNames: string[]) => {
-      // First, try exact matches
-      for (const name of possibleNames) {
-        if (obj && obj[name] !== undefined) {
-          return obj[name];
-        }
-      }
-
-      // If no exact match, try case-insensitive search
-      if (obj) {
-        const objKeys = Object.keys(obj);
-        for (const possibleName of possibleNames) {
-          const lowerPossible = possibleName.toLowerCase().replace(/[_\s]/g, '');
-          for (const objKey of objKeys) {
-            const lowerKey = objKey.toLowerCase().replace(/[_\s]/g, '');
-            if (lowerPossible === lowerKey && obj[objKey] !== undefined) {
-              return obj[objKey];
-            }
-          }
-        }
-      }
-
+    if (!ownersFullRaw || !p25Raw || !p26Raw) {
       return null;
-    };
+    }
 
     // Helper function to clean and convert amount values
     const cleanAmount = (value: any): number => {
@@ -281,4 +294,52 @@ export const upsertPayments2025 = async (payments: any[]) => {
 export const upsertPayments2026 = async (payments: any[]) => {
   if (!supabase) throw new Error('Supabase client not initialized');
   return await supabase.from('Collections_2026').upsert(payments);
+};
+
+export const fetchTaskLogs = async () => {
+  try {
+    console.log('Fetching task logs from secondary project (Task Logs)...');
+    const { data: taskLogs, error } = await supabaseTasks
+      .from('task_logs')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching task logs:', error);
+      return [];
+    }
+
+    // Map raw logs to typed TaskLog objects
+    const mappedLogs = (taskLogs || []).map((log: any) => {
+      const block = detectColumn(log, 'block', 'Block');
+      const floor = detectColumn(log, 'floor', 'Floor');
+      const flat = detectColumn(log, 'flat', 'Flat', 'flat_no', 'unit_no');
+
+      // Construct flat_no: Block + Floor + Flat (e.g., 1 + A + 3 = 1A3)
+      // If direct flat_no exists, use it as fallback or primary if others missing
+      let contentFlatNo = detectColumn(log, 'flat_no', 'flat_no_full');
+
+      if (block && floor && flat) {
+        contentFlatNo = `${block}${flat}${floor}`;
+      }
+
+      return {
+        id: log.id,
+        created_at: log.created_at,
+        timestamp: detectColumn(log, 'timestamp', 'date', 'time'),
+        task_description: detectColumn(log, 'task_description', 'description', 'task'),
+        status: detectColumn(log, 'status', 'current_status'),
+        image_url: detectColumn(log, 'image_url', 'image', 'url', 'photo'),
+        flat_no: contentFlatNo,
+        block,
+        floor,
+        flat
+      };
+    });
+
+    return mappedLogs;
+  } catch (err) {
+    console.error('Exception fetching task logs:', err);
+    return [];
+  }
 };

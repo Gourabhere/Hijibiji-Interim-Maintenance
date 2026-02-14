@@ -7,9 +7,9 @@ import {
   payments2025 as initialP25,
   payments2026 as initialP26
 } from './data';
-import { Owner, DashboardData, Payment2025, Payment2026 } from './types';
+import { Owner, DashboardData, Payment2025, Payment2026, TaskLog } from './types';
 import { MONTHLY_EXPENSES_2025, Q1_DUE_AMOUNT, MONTHLY_MAINTENANCE_2026 } from './constants';
-import { fetchAllData, testConnection } from './lib/supabase';
+import { fetchAllData, testConnection, fetchTaskLogs } from './lib/supabase';
 import { calculateLifetimePaid } from './lib/utils';
 import OwnerDashboard from './components/OwnerDashboard';
 import AdminDashboard from './components/AdminDashboard';
@@ -33,6 +33,7 @@ const App: React.FC = () => {
   const [owners, setOwners] = useState<Owner[]>(initialOwners);
   const [p25List, setP25List] = useState<Payment2025[]>(initialP25);
   const [p26List, setP26List] = useState<Payment2026[]>(initialP26);
+  const [taskLogs, setTaskLogs] = useState<TaskLog[]>([]); // State for task logs
 
   // State for dynamic config
   const [expenses2025, setExpenses2025] = useState(MONTHLY_EXPENSES_2025);
@@ -75,12 +76,21 @@ const App: React.FC = () => {
           setTimeout(() => reject(new Error('Fetch timeout')), 4000)
         );
 
-        const cloudData = await Promise.race([fetchAllData(), timeoutPromise]) as any;
+        // Fetch task logs in parallel
+        const [cloudData, fetchedTaskLogs] = await Promise.race([
+          Promise.all([fetchAllData(), fetchTaskLogs()]),
+          timeoutPromise
+        ]) as [any, TaskLog[]];
 
         if (cloudData && cloudData.owners?.length > 0) {
           setOwners(cloudData.owners);
           setP25List(cloudData.p25 || []);
           setP26List(cloudData.p26 || []);
+
+          if (fetchedTaskLogs) {
+            setTaskLogs(fetchedTaskLogs);
+            diagLog += `🧹 Task Logs: Loaded ${fetchedTaskLogs.length} records\n`;
+          }
 
           if (cloudData.expenses2025) {
             setExpenses2025(cloudData.expenses2025);
@@ -368,7 +378,8 @@ const App: React.FC = () => {
         q1Status,
         maintenancePaidTillDate: lifetimePaid,
         currentBalance: totalAvailable - q1Due
-      }
+      },
+      taskLogs: taskLogs // Pass global task logs or filter by flat if needed
     });
     setIsSearchFocused(false);
     setView('owner');

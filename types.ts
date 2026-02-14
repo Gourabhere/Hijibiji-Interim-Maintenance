@@ -58,6 +58,16 @@ export interface ExpenseReportItem {
   [key: string]: any;
 }
 
+export interface TaskLog {
+  id: number;
+  created_at: string;
+  timestamp?: string; // New field for specific task time
+  task_description: string;
+  status: string;
+  image_url: string;
+  flat_no?: string; // Optional if linked to a specific flat
+}
+
 export interface MaintenanceConfig {
   key: string;
   value: any;
@@ -80,4 +90,5 @@ export interface DashboardData {
     maintenancePaidTillDate: number;
     currentBalance: number;
   };
+  taskLogs?: TaskLog[];
 }

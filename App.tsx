@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, MutableRefObject } from 'react';
 import { App as CapApp } from '@capacitor/app';
 import { Search, Shield, User, Info, ArrowRight, X, RefreshCw, Cloud, Users, CheckCircle, TrendingUp } from 'lucide-react';
 import {
@@ -26,6 +26,8 @@ const App: React.FC = () => {
   const [isCloudLive, setIsCloudLive] = useState(false);
   const [diagnostics, setDiagnostics] = useState<string>('');
   const searchRef = useRef<HTMLDivElement>(null);
+  // Ref for sub-view back handlers (e.g., closing overlays in OwnerDashboard)
+  const subViewBackHandler = useRef<(() => boolean) | null>(null);
 
   const [isDarkMode, setIsDarkMode] = useState(false);
 
@@ -153,6 +155,12 @@ const App: React.FC = () => {
 
   // Sync Android hardware back button with app navigation
   const handleBack = useCallback(() => {
+    // First, check if a sub-view has an active overlay to close
+    if (subViewBackHandler.current) {
+      const handled = subViewBackHandler.current();
+      if (handled) return; // Overlay was closed, don't navigate further
+    }
+
     if (view === 'owner') {
       setView('landing');
       setSearchQuery('');
@@ -514,6 +522,7 @@ const App: React.FC = () => {
           onBack={() => { setView('landing'); setSearchQuery(''); setIsSearchFocused(false); }}
           isDarkMode={isDarkMode}
           onToggleTheme={setIsDarkMode}
+          backHandlerRef={subViewBackHandler}
         />
       )}
       {view === 'admin_login' && (

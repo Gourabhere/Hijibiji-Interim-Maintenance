@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, MutableRefObject } from 'react';
 import {
   ArrowLeft, Wallet, Info, CheckCircle2, AlertCircle,
   Clock, Megaphone, Activity, PhoneCall, Zap, Droplets, Dumbbell,
@@ -15,6 +15,7 @@ interface Props {
   onBack: () => void;
   isDarkMode: boolean;
   onToggleTheme: (isDark: boolean) => void;
+  backHandlerRef?: MutableRefObject<(() => boolean) | null>;
 }
 
 interface Tooltip {
@@ -60,13 +61,41 @@ const tooltips: Record<string, Tooltip> = {
   }
 };
 
-const OwnerDashboard: React.FC<Props> = ({ data, onBack, isDarkMode, onToggleTheme }) => {
+const OwnerDashboard: React.FC<Props> = ({ data, onBack, isDarkMode, onToggleTheme, backHandlerRef }) => {
   const [selectedYear, setSelectedYear] = useState<2025 | 2026>(2026);
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<MonthDetail | null>(null);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [isHousekeepingOpen, setIsHousekeepingOpen] = useState(false);
   const { owner, p2025, p2026, calculated } = data;
+
+  // Register back handler to close overlays before navigating away
+  useEffect(() => {
+    if (backHandlerRef) {
+      backHandlerRef.current = () => {
+        if (isHousekeepingOpen) {
+          setIsHousekeepingOpen(false);
+          return true; // Handled: closed the overlay
+        }
+        if (isQrModalOpen) {
+          setIsQrModalOpen(false);
+          return true;
+        }
+        if (activeTooltip) {
+          setActiveTooltip(null);
+          return true;
+        }
+        if (selectedMonth) {
+          setSelectedMonth(null);
+          return true;
+        }
+        return false; // Nothing to close, let App.tsx handle navigation
+      };
+    }
+    return () => {
+      if (backHandlerRef) backHandlerRef.current = null;
+    };
+  }, [backHandlerRef, isHousekeepingOpen, isQrModalOpen, activeTooltip, selectedMonth]);
 
   const months2026 = [
     { label: 'Jan', amount: p2026.jan }, { label: 'Feb', amount: p2026.feb },
@@ -452,26 +481,26 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack, isDarkMode, onToggleThe
       {/* Month Detail Modal */}
       {selectedMonth && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end animate-in fade-in duration-200">
-          <div className="w-full bg-[#1e293b] rounded-t-[2rem] p-6 border-t border-white/10 animate-in slide-in-from-bottom-4 shadow-2xl">
+          <div className="w-full bg-white dark:bg-[#1e293b] rounded-t-[2rem] p-6 border-t border-slate-200 dark:border-white/10 animate-in slide-in-from-bottom-4 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-black text-white">{selectedMonth.month} {selectedMonth.year}</h3>
+              <h3 className="text-lg font-black text-slate-900 dark:text-white">{selectedMonth.month} {selectedMonth.year}</h3>
               <button
                 onClick={() => setSelectedMonth(null)}
                 className="p-2 hover:bg-white/5 rounded-lg transition-colors neo-button"
               >
-                <X size={20} />
+                <X size={20} className="text-slate-600 dark:text-white" />
               </button>
             </div>
 
             <div className="space-y-4">
-              <div className="p-4 rounded-2xl border border-white/5 shadow-neo-flat">
+              <div className="p-4 rounded-2xl border border-slate-200 dark:border-white/5 shadow-neo-flat">
                 <div className="text-sm text-slate-500 dark:text-white/50 mb-2">Amount</div>
                 <div className="text-2xl font-black text-cyan-600 dark:text-cyan-400">{formatCurrency(selectedMonth.amount)}</div>
               </div>
 
-              <div className="p-4 rounded-2xl border border-white/5 shadow-neo-flat">
+              <div className="p-4 rounded-2xl border border-slate-200 dark:border-white/5 shadow-neo-flat">
                 <div className="text-sm text-slate-500 dark:text-white/50 mb-2">Status</div>
-                <div className={`text-lg font-black ${selectedMonth.status === 'paid' ? 'text-emerald-400' :
+                <div className={`text-lg font-black ${selectedMonth.status === 'paid' ? 'text-emerald-600 dark:text-emerald-400' :
                   selectedMonth.status === 'partial' ? 'text-amber-600 dark:text-amber-400' :
                     'text-rose-600 dark:text-rose-400'
                   }`}>
@@ -482,14 +511,14 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack, isDarkMode, onToggleThe
               </div>
 
               {selectedMonth.date && (
-                <div className="p-4 rounded-2xl border border-white/5 shadow-neo-flat">
+                <div className="p-4 rounded-2xl border border-slate-200 dark:border-white/5 shadow-neo-flat">
                   <div className="text-sm text-slate-500 dark:text-white/50 mb-2">Payment Date</div>
                   <div className="text-lg font-bold text-slate-900 dark:text-white">{selectedMonth.date}</div>
                 </div>
               )}
 
               {selectedMonth.mode && (
-                <div className="p-4 rounded-2xl border border-white/5 shadow-neo-flat">
+                <div className="p-4 rounded-2xl border border-slate-200 dark:border-white/5 shadow-neo-flat">
                   <div className="text-sm text-slate-500 dark:text-white/50 mb-2">Mode</div>
                   <div className="text-lg font-bold text-slate-900 dark:text-white">{selectedMonth.mode}</div>
                 </div>

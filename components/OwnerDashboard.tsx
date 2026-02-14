@@ -418,18 +418,24 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack, isDarkMode, onToggleThe
             </div>
           ))}
 
-          {/* Housekeeping Button */}
-          {['Covered', 'Paid'].includes(calculated.q1Status) && (
-            <div
-              onClick={() => setIsHousekeepingOpen(true)}
-              className="bg-transparent p-4 rounded-2xl border border-white/5 hover:border-indigo-500/30 flex flex-col items-center text-center transition-all duration-300 cursor-pointer neo-button relative overflow-hidden group"
-            >
-              <div className="absolute inset-0 bg-indigo-500/5 group-hover:bg-indigo-500/10 transition-colors"></div>
-              <Megaphone size={20} className="mb-2 text-indigo-500 dark:text-indigo-400" />
-              <div className="text-[9px] font-black uppercase tracking-tighter text-slate-600 dark:text-white/50 mb-1">Services</div>
-              <div className="text-[10px] font-bold text-slate-900 dark:text-white">Portal</div>
-            </div>
-          )}
+          {/* Housekeeping Button - show if Q1 Covered/Paid or current month paid */}
+          {(() => {
+            const now = new Date();
+            const monthKeys = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+            const currentMonthKey = monthKeys[now.getMonth()] as keyof typeof p2026;
+            const currentMonthPaid = now.getFullYear() === 2026 ? (p2026[currentMonthKey] ?? 0) >= 2000 : false;
+            return ['Covered', 'Paid'].includes(calculated.q1Status) || currentMonthPaid;
+          })() && (
+              <div
+                onClick={() => setIsHousekeepingOpen(true)}
+                className="bg-transparent p-4 rounded-2xl border border-white/5 hover:border-indigo-500/30 flex flex-col items-center text-center transition-all duration-300 cursor-pointer neo-button relative overflow-hidden group"
+              >
+                <div className="absolute inset-0 bg-indigo-500/5 group-hover:bg-indigo-500/10 transition-colors"></div>
+                <Megaphone size={20} className="mb-2 text-indigo-500 dark:text-indigo-400" />
+                <div className="text-[9px] font-black uppercase tracking-tighter text-slate-600 dark:text-white/50 mb-1">Services</div>
+                <div className="text-[10px] font-bold text-slate-900 dark:text-white">Portal</div>
+              </div>
+            )}
         </div>
       </div>
 

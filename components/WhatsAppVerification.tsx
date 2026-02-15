@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Shield, Phone, CheckCircle2, X, AlertTriangle, Send, KeyRound, RefreshCw } from 'lucide-react';
+import { Shield, Phone, CheckCircle2, X, AlertTriangle, Send, KeyRound, RefreshCw, Mail } from 'lucide-react';
 
 interface Props {
     flatNo: string;
@@ -9,18 +9,23 @@ interface Props {
 }
 
 const CODE_LENGTH = 6;
-const RESEND_COOLDOWN = 60; // seconds
+const RESEND_COOLDOWN = 60;
 const SUPABASE_URL = 'https://bhdrlzaqejkrqsozbcbr.supabase.co';
 
+type SendMethod = 'sms' | 'email';
+
 const OtpVerification: React.FC<Props> = ({ flatNo, ownerName, onVerified, onCancel }) => {
-    const [step, setStep] = useState<'phone' | 'otp'>('phone');
+    const [step, setStep] = useState<'input' | 'otp'>('input');
+    const [method, setMethod] = useState<SendMethod>('sms');
     const [phoneInput, setPhoneInput] = useState('');
+    const [emailInput, setEmailInput] = useState('');
     const [otpInput, setOtpInput] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [resendCooldown, setResendCooldown] = useState(0);
     const otpInputRef = useRef<HTMLInputElement>(null);
     const phoneInputRef = useRef<HTMLInputElement>(null);
+    const emailInputRef = useRef<HTMLInputElement>(null);
 
     // Resend cooldown timer
     useEffect(() => {
@@ -36,25 +41,44 @@ const OtpVerification: React.FC<Props> = ({ flatNo, ownerName, onVerified, onCan
 
     // Auto-focus
     useEffect(() => {
-        if (step === 'phone' && phoneInputRef.current) phoneInputRef.current.focus();
+        if (step === 'input') {
+            if (method === 'sms' && phoneInputRef.current) phoneInputRef.current.focus();
+            if (method === 'email' && emailInputRef.current) emailInputRef.current.focus();
+        }
         if (step === 'otp' && otpInputRef.current) otpInputRef.current.focus();
-    }, [step]);
+    }, [step, method]);
+
+    const isInputValid = () => {
+        if (method === 'sms') return phoneInput.replace(/\D/g, '').slice(-10).length === 10;
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.trim());
+    };
 
     const handleSendOtp = async () => {
         setError('');
-        const cleaned = phoneInput.trim().replace(/\D/g, '').slice(-10);
 
-        if (cleaned.length < 10) {
-            setError('Please enter a valid 10-digit phone number.');
-            return;
+        if (method === 'sms') {
+            const cleaned = phoneInput.trim().replace(/\D/g, '').slice(-10);
+            if (cleaned.length < 10) {
+                setError('Please enter a valid 10-digit phone number.');
+                return;
+            }
+        } else {
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.trim())) {
+                setError('Please enter a valid email address.');
+                return;
+            }
         }
 
         setIsLoading(true);
         try {
+            const body: any = { flatNo, method };
+            if (method === 'sms') body.phone = phoneInput.trim().replace(/\D/g, '').slice(-10);
+            else body.email = emailInput.trim().toLowerCase();
+
             const res = await fetch(`${SUPABASE_URL}/functions/v1/send-otp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: cleaned, flatNo }),
+                body: JSON.stringify(body),
             });
 
             const data = await res.json();
@@ -83,10 +107,14 @@ const OtpVerification: React.FC<Props> = ({ flatNo, ownerName, onVerified, onCan
 
         setIsLoading(true);
         try {
+            const body: any = { code: otpInput };
+            if (method === 'sms') body.phone = phoneInput.trim().replace(/\D/g, '').slice(-10);
+            else body.email = emailInput.trim().toLowerCase();
+
             const res = await fetch(`${SUPABASE_URL}/functions/v1/verify-otp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: phoneInput.trim(), code: otpInput }),
+                body: JSON.stringify(body),
             });
 
             const data = await res.json();
@@ -111,10 +139,14 @@ const OtpVerification: React.FC<Props> = ({ flatNo, ownerName, onVerified, onCan
         setIsLoading(true);
 
         try {
+            const body: any = { flatNo, method };
+            if (method === 'sms') body.phone = phoneInput.trim().replace(/\D/g, '').slice(-10);
+            else body.email = emailInput.trim().toLowerCase();
+
             const res = await fetch(`${SUPABASE_URL}/functions/v1/send-otp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: phoneInput.trim(), flatNo }),
+                body: JSON.stringify(body),
             });
 
             const data = await res.json();
@@ -131,12 +163,22 @@ const OtpVerification: React.FC<Props> = ({ flatNo, ownerName, onVerified, onCan
         }
     };
 
-    const handlePhoneKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && phoneInput.trim().length >= 10) handleSendOtp();
+    const handleInputKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && isInputValid()) handleSendOtp();
     };
 
     const handleOtpKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && otpInput.length === CODE_LENGTH) handleVerifyOtp();
+    };
+
+    const maskedRecipient = () => {
+        if (method === 'sms') {
+            const p = phoneInput.replace(/\D/g, '').slice(-10);
+            return `+91 ${p.slice(0, 2)}****${p.slice(-4)}`;
+        }
+        const e = emailInput.trim();
+        const [local, domain] = e.split('@');
+        return `${local.slice(0, 2)}***@${domain}`;
     };
 
     return (
@@ -162,36 +204,79 @@ const OtpVerification: React.FC<Props> = ({ flatNo, ownerName, onVerified, onCan
                     </button>
                 </div>
 
-                {step === 'phone' ? (
-                    /* Step 1: Enter phone number */
+                {step === 'input' ? (
                     <>
+                        {/* Method Toggle */}
+                        <div className="flex gap-2 mb-5 p-1 bg-slate-100 dark:bg-white/5 rounded-2xl">
+                            <button
+                                onClick={() => { setMethod('sms'); setError(''); }}
+                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all ${method === 'sms'
+                                    ? 'bg-white dark:bg-white/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                    : 'text-slate-400 dark:text-white/40 hover:text-slate-600 dark:hover:text-white/60'
+                                    }`}
+                            >
+                                <Phone size={14} /> SMS
+                            </button>
+                            <button
+                                onClick={() => { setMethod('email'); setError(''); }}
+                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all ${method === 'email'
+                                    ? 'bg-white dark:bg-white/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                    : 'text-slate-400 dark:text-white/40 hover:text-slate-600 dark:hover:text-white/60'
+                                    }`}
+                            >
+                                <Mail size={14} /> Email
+                            </button>
+                        </div>
+
+                        {/* Info Box */}
                         <div className="rounded-2xl p-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 mb-5">
                             <div className="flex items-start gap-3">
-                                <Phone size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
+                                {method === 'sms' ? (
+                                    <Phone size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
+                                ) : (
+                                    <Mail size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
+                                )}
                                 <p className="text-xs text-slate-600 dark:text-white/70 leading-relaxed">
-                                    Enter your <strong>registered phone number</strong>. A verification code will be sent via SMS to verify your identity.
+                                    {method === 'sms'
+                                        ? <>Enter your <strong>phone number</strong>. A verification code will be sent via SMS.</>
+                                        : <>Enter your <strong>email address</strong>. A verification code will be sent to your inbox.</>
+                                    }
                                 </p>
                             </div>
                         </div>
 
+                        {/* Input Field */}
                         <div className="mb-4">
                             <label className="text-[9px] text-slate-400 dark:text-white/40 font-bold uppercase tracking-wider mb-2 block">
-                                Phone Number
+                                {method === 'sms' ? 'Phone Number' : 'Email Address'}
                             </label>
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-bold text-slate-400 dark:text-white/30 pl-1">+91</span>
+                            {method === 'sms' ? (
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-bold text-slate-400 dark:text-white/30 pl-1">+91</span>
+                                    <input
+                                        ref={phoneInputRef}
+                                        type="tel"
+                                        value={phoneInput}
+                                        onChange={(e) => { setPhoneInput(e.target.value.replace(/[^0-9]/g, '')); setError(''); }}
+                                        onKeyDown={handleInputKeyDown}
+                                        placeholder="10-digit number"
+                                        className="flex-1 h-14 bg-transparent neo-inset rounded-2xl px-4 outline-none focus:ring-2 ring-indigo-500/50 transition-all text-lg placeholder:text-slate-300 dark:placeholder:text-white/20 font-bold text-slate-900 dark:text-white tracking-wider"
+                                        maxLength={10}
+                                        autoComplete="off"
+                                    />
+                                </div>
+                            ) : (
                                 <input
-                                    ref={phoneInputRef}
-                                    type="tel"
-                                    value={phoneInput}
-                                    onChange={(e) => { setPhoneInput(e.target.value.replace(/[^0-9]/g, '')); setError(''); }}
-                                    onKeyDown={handlePhoneKeyDown}
-                                    placeholder="10-digit number"
-                                    className="flex-1 h-14 bg-transparent neo-inset rounded-2xl px-4 outline-none focus:ring-2 ring-indigo-500/50 transition-all text-lg placeholder:text-slate-300 dark:placeholder:text-white/20 font-bold text-slate-900 dark:text-white tracking-wider"
-                                    maxLength={10}
+                                    ref={emailInputRef}
+                                    type="email"
+                                    value={emailInput}
+                                    onChange={(e) => { setEmailInput(e.target.value); setError(''); }}
+                                    onKeyDown={handleInputKeyDown}
+                                    placeholder="your@email.com"
+                                    className="w-full h-14 bg-transparent neo-inset rounded-2xl px-4 outline-none focus:ring-2 ring-indigo-500/50 transition-all text-base placeholder:text-slate-300 dark:placeholder:text-white/20 font-bold text-slate-900 dark:text-white"
                                     autoComplete="off"
                                 />
-                            </div>
+                            )}
                         </div>
 
                         {error && (
@@ -203,8 +288,8 @@ const OtpVerification: React.FC<Props> = ({ flatNo, ownerName, onVerified, onCan
 
                         <button
                             onClick={handleSendOtp}
-                            disabled={phoneInput.length < 10 || isLoading}
-                            className={`w-full py-4 font-black rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] text-sm ${phoneInput.length >= 10 && !isLoading
+                            disabled={!isInputValid() || isLoading}
+                            className={`w-full py-4 font-black rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] text-sm ${isInputValid() && !isLoading
                                 ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white'
                                 : 'bg-slate-100 dark:bg-white/5 text-slate-300 dark:text-white/20 cursor-not-allowed shadow-none'
                                 }`}
@@ -212,9 +297,15 @@ const OtpVerification: React.FC<Props> = ({ flatNo, ownerName, onVerified, onCan
                             {isLoading ? (
                                 <><RefreshCw size={16} className="animate-spin" /> Sending...</>
                             ) : (
-                                <><Send size={16} /> Send Code</>
+                                <><Send size={16} /> Send Code via {method === 'sms' ? 'SMS' : 'Email'}</>
                             )}
                         </button>
+
+                        {method === 'sms' && (
+                            <p className="text-center text-[10px] text-slate-400 dark:text-white/30 mt-3">
+                                SMS not working? Try <button onClick={() => { setMethod('email'); setError(''); }} className="text-indigo-500 font-bold hover:underline">Email</button> instead
+                            </p>
+                        )}
 
                         <button
                             onClick={onCancel}
@@ -231,9 +322,11 @@ const OtpVerification: React.FC<Props> = ({ flatNo, ownerName, onVerified, onCan
                                 <KeyRound size={16} className="text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
                                 <div>
                                     <p className="text-xs text-slate-600 dark:text-white/70 leading-relaxed">
-                                        A {CODE_LENGTH}-digit verification code has been sent to <strong>+91 {phoneInput.slice(0, 2)}****{phoneInput.slice(-4)}</strong>
+                                        A {CODE_LENGTH}-digit verification code has been sent to <strong>{maskedRecipient()}</strong>
                                     </p>
-                                    <p className="text-[10px] text-slate-400 dark:text-white/40 mt-1">Check your SMS messages</p>
+                                    <p className="text-[10px] text-slate-400 dark:text-white/40 mt-1">
+                                        {method === 'sms' ? 'Check your SMS messages' : 'Check your email inbox (and spam)'}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -281,10 +374,10 @@ const OtpVerification: React.FC<Props> = ({ flatNo, ownerName, onVerified, onCan
                         {/* Resend & Back */}
                         <div className="flex items-center justify-between mt-4">
                             <button
-                                onClick={() => { setStep('phone'); setOtpInput(''); setError(''); }}
+                                onClick={() => { setStep('input'); setOtpInput(''); setError(''); }}
                                 className="text-xs text-slate-400 dark:text-white/40 font-bold hover:text-slate-600 dark:hover:text-white/60 transition-colors"
                             >
-                                ← Change number
+                                ← Change {method === 'sms' ? 'number' : 'email'}
                             </button>
                             <button
                                 onClick={handleResendOtp}

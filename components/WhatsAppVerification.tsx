@@ -42,7 +42,7 @@ const OtpVerification: React.FC<Props> = ({ flatNo, ownerName, onVerified, onCan
 
     const handleSendOtp = async () => {
         setError('');
-        const cleaned = phoneInput.trim().replace(/[\s\-()]/g, '');
+        const cleaned = phoneInput.trim().replace(/\D/g, '').slice(-10);
 
         if (cleaned.length < 10) {
             setError('Please enter a valid 10-digit phone number.');

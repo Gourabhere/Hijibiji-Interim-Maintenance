@@ -9,6 +9,7 @@ import { formatCurrency } from '../utils';
 import QrModal from './QrModal';
 import NeumorphicToggle from './NeumorphicToggle';
 import HousekeepingPortal from './HousekeepingPortal';
+import OtpVerification from './WhatsAppVerification';
 
 interface Props {
   data: DashboardData;
@@ -67,12 +68,17 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack, isDarkMode, onToggleThe
   const [selectedMonth, setSelectedMonth] = useState<MonthDetail | null>(null);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [isHousekeepingOpen, setIsHousekeepingOpen] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const { owner, p2025, p2026, calculated } = data;
 
   // Register back handler to close overlays before navigating away
   useEffect(() => {
     if (backHandlerRef) {
       backHandlerRef.current = () => {
+        if (isVerifying) {
+          setIsVerifying(false);
+          return true; // Handled: closed the verification modal
+        }
         if (isHousekeepingOpen) {
           setIsHousekeepingOpen(false);
           return true; // Handled: closed the overlay
@@ -95,7 +101,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack, isDarkMode, onToggleThe
     return () => {
       if (backHandlerRef) backHandlerRef.current = null;
     };
-  }, [backHandlerRef, isHousekeepingOpen, isQrModalOpen, activeTooltip, selectedMonth]);
+  }, [backHandlerRef, isVerifying, isHousekeepingOpen, isQrModalOpen, activeTooltip, selectedMonth]);
 
   const months2026 = [
     { label: 'Jan', amount: p2026.jan }, { label: 'Feb', amount: p2026.feb },
@@ -427,7 +433,7 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack, isDarkMode, onToggleThe
             return ['Covered', 'Paid'].includes(calculated.q1Status) || currentMonthPaid;
           })() && (
               <div
-                onClick={() => setIsHousekeepingOpen(true)}
+                onClick={() => setIsVerifying(true)}
                 className="bg-transparent p-4 rounded-2xl border border-white/5 hover:border-indigo-500/30 flex flex-col items-center text-center transition-all duration-300 cursor-pointer neo-button relative overflow-hidden group"
               >
                 <div className="absolute inset-0 bg-indigo-500/5 group-hover:bg-indigo-500/10 transition-colors"></div>
@@ -438,6 +444,19 @@ const OwnerDashboard: React.FC<Props> = ({ data, onBack, isDarkMode, onToggleThe
             )}
         </div>
       </div>
+
+      {/* Phone Verification Gate */}
+      {isVerifying && (
+        <OtpVerification
+          flatNo={owner.flatNo}
+          ownerName={owner.name}
+          onVerified={() => {
+            setIsVerifying(false);
+            setIsHousekeepingOpen(true);
+          }}
+          onCancel={() => setIsVerifying(false)}
+        />
+      )}
 
       {/* Housekeeping Portal Overlay */}
       {isHousekeepingOpen && data.taskLogs && (

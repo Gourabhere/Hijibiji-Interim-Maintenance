@@ -75,7 +75,7 @@ const App: React.FC = () => {
         diagLog += '📥 Fetching data...\n';
 
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Fetch timeout')), 4000)
+          setTimeout(() => reject(new Error('Fetch timeout')), 15000)
         );
 
         // Fetch task logs in parallel

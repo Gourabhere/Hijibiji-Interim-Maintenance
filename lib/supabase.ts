@@ -39,29 +39,17 @@ const SUPABASE_TASKS_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOi
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 export const supabaseTasks = createClient(SUPABASE_TASKS_URL, SUPABASE_TASKS_ANON_KEY);
 
-// Test connection and show diagnostic info
+// Test connection with a single quick check
 export const testConnection = async () => {
   try {
-    // First test: just authenticate
-    const { error: authError } = await supabase.auth.getSession();
-    if (authError) { /* silent failure */ }
+    // Quick connectivity test: fetch 1 row from a known table
+    const { data, error } = await supabase
+      .from('Registered_Owner_Details')
+      .select('SN')
+      .limit(1);
 
-    // Test secondary connection
-    const { error: taskAuthError } = await supabaseTasks.auth.getSession();
-    if (taskAuthError) { console.warn('Secondary Supabase auth failed'); }
-
-    // Test each table and show column names
-    const tables = ['Registered_Owner_Details', 'Collections_2025', 'Collections_2026', 'Maintenance_Config'];
-
-    for (const tableName of tables) {
-      const { data: tableData, error: tableError } = await supabase
-        .from(tableName)
-        .select('*')
-        .limit(1);
-
-      if (tableError) {
-        // Silent error
-      }
+    if (error) {
+      return false;
     }
 
     return true;

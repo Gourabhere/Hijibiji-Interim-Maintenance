@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Shield, Phone, CheckCircle2, X, AlertTriangle, Send, KeyRound, RefreshCw, Mail } from 'lucide-react';
+import { Shield, Phone, CheckCircle2, X, AlertTriangle, Send, KeyRound, RefreshCw, Mail, Lock } from 'lucide-react';
 
 interface Props {
     flatNo: string;
@@ -9,25 +9,71 @@ interface Props {
 }
 
 const CODE_LENGTH = 6;
+const PIN_LENGTH = 4;
 const RESEND_COOLDOWN = 60;
 const SUPABASE_URL = 'https://bhdrlzaqejkrqsozbcbr.supabase.co';
 
 type SendMethod = 'sms' | 'email';
+type Step = 'checking' | 'pin-entry' | 'input' | 'otp' | 'pin-setup';
 
 const OtpVerification: React.FC<Props> = ({ flatNo, ownerName, onVerified, onCancel }) => {
-    const [step, setStep] = useState<'input' | 'otp'>('input');
+    const [step, setStep] = useState<Step>('checking');
     const [method, setMethod] = useState<SendMethod>('sms');
+
+    // Inputs
     const [phoneInput, setPhoneInput] = useState('');
     const [emailInput, setEmailInput] = useState('');
     const [otpInput, setOtpInput] = useState('');
+    const [pinInput, setPinInput] = useState('');
+    const [confirmPinInput, setConfirmPinInput] = useState('');
+
+    // State
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [resendCooldown, setResendCooldown] = useState(0);
-    const otpInputRef = useRef<HTMLInputElement>(null);
+    const [hasPin, setHasPin] = useState(false);
+
+    // Refs
     const phoneInputRef = useRef<HTMLInputElement>(null);
     const emailInputRef = useRef<HTMLInputElement>(null);
+    const otpInputRef = useRef<HTMLInputElement>(null);
+    const pinInputRef = useRef<HTMLInputElement>(null);
 
-    // Resend cooldown timer
+    // Check for PIN on mount
+    useEffect(() => {
+        const checkPin = async () => {
+            setIsLoading(true);
+            try {
+                const res = await fetch(`${SUPABASE_URL}/functions/v1/check-pin`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ flatNo }),
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.hasPin && !data.isLocked) {
+                        setHasPin(true);
+                        setStep('pin-entry');
+                    } else {
+                        // No PIN or locked -> go to OTP flow
+                        if (data.isLocked) setError('Account locked due to too many failed attempts. Please verify via OTP.');
+                        setStep('input');
+                    }
+                } else {
+                    setStep('input');
+                }
+            } catch (err) {
+                console.error(err);
+                setStep('input');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        checkPin();
+    }, [flatNo]);
+
+    // Resend timer
     useEffect(() => {
         if (resendCooldown <= 0) return;
         const timer = setInterval(() => {
@@ -46,6 +92,7 @@ const OtpVerification: React.FC<Props> = ({ flatNo, ownerName, onVerified, onCan
             if (method === 'email' && emailInputRef.current) emailInputRef.current.focus();
         }
         if (step === 'otp' && otpInputRef.current) otpInputRef.current.focus();
+        if ((step === 'pin-entry' || step === 'pin-setup') && pinInputRef.current) pinInputRef.current.focus();
     }, [step, method]);
 
     const isInputValid = () => {
@@ -55,20 +102,6 @@ const OtpVerification: React.FC<Props> = ({ flatNo, ownerName, onVerified, onCan
 
     const handleSendOtp = async () => {
         setError('');
-
-        if (method === 'sms') {
-            const cleaned = phoneInput.trim().replace(/\D/g, '').slice(-10);
-            if (cleaned.length < 10) {
-                setError('Please enter a valid 10-digit phone number.');
-                return;
-            }
-        } else {
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.trim())) {
-                setError('Please enter a valid email address.');
-                return;
-            }
-        }
-
         setIsLoading(true);
         try {
             const body: any = { flatNo, method };
@@ -82,17 +115,16 @@ const OtpVerification: React.FC<Props> = ({ flatNo, ownerName, onVerified, onCan
             });
 
             const data = await res.json();
-
             if (!res.ok || data.error) {
-                setError(data.error || 'Failed to send code. Please try again.');
+                setError(data.error || 'Failed to send code.');
                 setIsLoading(false);
                 return;
             }
 
             setStep('otp');
             setResendCooldown(RESEND_COOLDOWN);
-        } catch (err: any) {
-            setError('Network error. Please check your connection.');
+        } catch (err) {
+            setError('Network error.');
         } finally {
             setIsLoading(false);
         }
@@ -100,11 +132,6 @@ const OtpVerification: React.FC<Props> = ({ flatNo, ownerName, onVerified, onCan
 
     const handleVerifyOtp = async () => {
         setError('');
-        if (otpInput.length !== CODE_LENGTH) {
-            setError(`Please enter the ${CODE_LENGTH}-digit code.`);
-            return;
-        }
-
         setIsLoading(true);
         try {
             const body: any = { code: otpInput };
@@ -118,57 +145,83 @@ const OtpVerification: React.FC<Props> = ({ flatNo, ownerName, onVerified, onCan
             });
 
             const data = await res.json();
-
             if (data.verified) {
-                onVerified();
+                // If user already has PIN (and forgot it), or no PIN -> offer to set PIN
+                setStep('pin-setup');
+                setPinInput('');
+                setConfirmPinInput('');
             } else {
-                setError(data.error || 'Invalid or expired code. Please try again.');
-                setOtpInput('');
+                setError(data.error || 'Invalid code.');
             }
-        } catch (err: any) {
-            setError('Network error. Please check your connection.');
+        } catch (err) {
+            setError('Network error.');
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleResendOtp = async () => {
-        if (resendCooldown > 0) return;
+    const handleVerifyPin = async () => {
         setError('');
-        setOtpInput('');
         setIsLoading(true);
-
         try {
-            const body: any = { flatNo, method };
-            if (method === 'sms') body.phone = phoneInput.trim().replace(/\D/g, '').slice(-10);
-            else body.email = emailInput.trim().toLowerCase();
-
-            const res = await fetch(`${SUPABASE_URL}/functions/v1/send-otp`, {
+            const res = await fetch(`${SUPABASE_URL}/functions/v1/verify-pin`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body),
+                body: JSON.stringify({ flatNo, pin: pinInput }),
             });
-
             const data = await res.json();
 
-            if (!res.ok || data.error) {
-                setError(data.error || 'Failed to resend code.');
+            if (data.verified) {
+                if (data.isDefault) {
+                    setStep('pin-setup');
+                    setPinInput('');
+                    setConfirmPinInput('');
+                    setError('Default PIN detected. Please set a personal PIN.');
+                } else {
+                    onVerified();
+                }
             } else {
-                setResendCooldown(RESEND_COOLDOWN);
+                setError(data.error || 'Incorrect PIN.');
+                // If confirmed locked, force OTP
+                if (data.error && data.error.includes('locked')) {
+                    setTimeout(() => {
+                        setStep('input');
+                        setPinInput('');
+                    }, 2000);
+                } else {
+                    setPinInput('');
+                }
             }
-        } catch (err: any) {
-            setError('Network error. Please check your connection.');
+        } catch (err) {
+            setError('Network error.');
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleInputKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && isInputValid()) handleSendOtp();
-    };
+    const handleSetPin = async () => {
+        if (pinInput.length !== PIN_LENGTH) { setError('PIN must be 4 digits'); return; }
+        if (pinInput !== confirmPinInput) { setError('PINs do not match'); return; }
 
-    const handleOtpKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && otpInput.length === CODE_LENGTH) handleVerifyOtp();
+        setError('');
+        setIsLoading(true);
+        try {
+            const res = await fetch(`${SUPABASE_URL}/functions/v1/set-pin`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ flatNo, pin: pinInput }),
+            });
+
+            if (res.ok) {
+                onVerified();
+            } else {
+                setError('Failed to set PIN.');
+            }
+        } catch (err) {
+            setError('Network error.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const maskedRecipient = () => {
@@ -184,7 +237,6 @@ const OtpVerification: React.FC<Props> = ({ flatNo, ownerName, onVerified, onCan
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
             <div className="w-full max-w-sm bg-white dark:bg-[#1e293b] rounded-[2rem] p-6 border border-slate-200 dark:border-white/10 shadow-2xl animate-in zoom-in-95 duration-300">
-
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
@@ -196,206 +248,121 @@ const OtpVerification: React.FC<Props> = ({ flatNo, ownerName, onVerified, onCan
                             <p className="text-[10px] text-slate-500 dark:text-white/50 font-bold uppercase tracking-wider">Flat {flatNo}</p>
                         </div>
                     </div>
-                    <button
-                        onClick={onCancel}
-                        className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-colors"
-                    >
+                    <button onClick={onCancel} className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-colors">
                         <X size={18} className="text-slate-400" />
                     </button>
                 </div>
 
-                {step === 'input' ? (
+                {step === 'checking' && (
+                    <div className="flex flex-col items-center justify-center py-10 gap-3">
+                        <RefreshCw size={24} className="text-indigo-500 animate-spin" />
+                        <p className="text-xs text-slate-400 font-bold">Checking security setting...</p>
+                    </div>
+                )}
+
+                {step === 'pin-entry' && (
                     <>
-                        {/* Method Toggle */}
-                        <div className="flex gap-2 mb-5 p-1 bg-slate-100 dark:bg-white/5 rounded-2xl">
-                            <button
-                                onClick={() => { setMethod('sms'); setError(''); }}
-                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all ${method === 'sms'
-                                    ? 'bg-white dark:bg-white/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                    : 'text-slate-400 dark:text-white/40 hover:text-slate-600 dark:hover:text-white/60'
-                                    }`}
-                            >
-                                <Phone size={14} /> SMS
-                            </button>
-                            <button
-                                onClick={() => { setMethod('email'); setError(''); }}
-                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all ${method === 'email'
-                                    ? 'bg-white dark:bg-white/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                    : 'text-slate-400 dark:text-white/40 hover:text-slate-600 dark:hover:text-white/60'
-                                    }`}
-                            >
-                                <Mail size={14} /> Email
-                            </button>
+                        <div className="text-center mb-6">
+                            <h2 className="text-lg font-black text-slate-900 dark:text-white mb-2">Enter Access PIN</h2>
+                            <p className="text-xs text-slate-500 dark:text-white/60">Enter the 4-digit PIN for your flat</p>
                         </div>
-
-                        {/* Info Box */}
-                        <div className="rounded-2xl p-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 mb-5">
-                            <div className="flex items-start gap-3">
-                                {method === 'sms' ? (
-                                    <Phone size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
-                                ) : (
-                                    <Mail size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
-                                )}
-                                <p className="text-xs text-slate-600 dark:text-white/70 leading-relaxed">
-                                    {method === 'sms'
-                                        ? <>Enter your <strong>phone number</strong>. A verification code will be sent via SMS.</>
-                                        : <>Enter your <strong>email address</strong>. A verification code will be sent to your inbox.</>
-                                    }
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Input Field */}
-                        <div className="mb-4">
-                            <label className="text-[9px] text-slate-400 dark:text-white/40 font-bold uppercase tracking-wider mb-2 block">
-                                {method === 'sms' ? 'Phone Number' : 'Email Address'}
-                            </label>
-                            {method === 'sms' ? (
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm font-bold text-slate-400 dark:text-white/30 pl-1">+91</span>
-                                    <input
-                                        ref={phoneInputRef}
-                                        type="tel"
-                                        value={phoneInput}
-                                        onChange={(e) => { setPhoneInput(e.target.value.replace(/[^0-9]/g, '')); setError(''); }}
-                                        onKeyDown={handleInputKeyDown}
-                                        placeholder="10-digit number"
-                                        className="flex-1 h-14 bg-transparent neo-inset rounded-2xl px-4 outline-none focus:ring-2 ring-indigo-500/50 transition-all text-lg placeholder:text-slate-300 dark:placeholder:text-white/20 font-bold text-slate-900 dark:text-white tracking-wider"
-                                        maxLength={10}
-                                        autoComplete="off"
-                                    />
-                                </div>
-                            ) : (
-                                <input
-                                    ref={emailInputRef}
-                                    type="email"
-                                    value={emailInput}
-                                    onChange={(e) => { setEmailInput(e.target.value); setError(''); }}
-                                    onKeyDown={handleInputKeyDown}
-                                    placeholder="your@email.com"
-                                    className="w-full h-14 bg-transparent neo-inset rounded-2xl px-4 outline-none focus:ring-2 ring-indigo-500/50 transition-all text-base placeholder:text-slate-300 dark:placeholder:text-white/20 font-bold text-slate-900 dark:text-white"
-                                    autoComplete="off"
-                                />
-                            )}
-                        </div>
-
-                        {error && (
-                            <div className="flex items-center gap-2 mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20">
-                                <AlertTriangle size={14} className="text-rose-500 flex-shrink-0" />
-                                <p className="text-xs text-rose-600 dark:text-rose-400 font-bold">{error}</p>
-                            </div>
-                        )}
-
-                        <button
-                            onClick={handleSendOtp}
-                            disabled={!isInputValid() || isLoading}
-                            className={`w-full py-4 font-black rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] text-sm ${isInputValid() && !isLoading
-                                ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white'
-                                : 'bg-slate-100 dark:bg-white/5 text-slate-300 dark:text-white/20 cursor-not-allowed shadow-none'
-                                }`}
-                        >
-                            {isLoading ? (
-                                <><RefreshCw size={16} className="animate-spin" /> Sending...</>
-                            ) : (
-                                <><Send size={16} /> Send Code via {method === 'sms' ? 'SMS' : 'Email'}</>
-                            )}
-                        </button>
-
-                        {method === 'sms' && (
-                            <p className="text-center text-[10px] text-slate-400 dark:text-white/30 mt-3">
-                                SMS not working? Try <button onClick={() => { setMethod('email'); setError(''); }} className="text-indigo-500 font-bold hover:underline">Email</button> instead
-                            </p>
-                        )}
-
-                        <button
-                            onClick={onCancel}
-                            className="w-full mt-3 py-3 text-slate-400 dark:text-white/40 font-bold text-xs uppercase tracking-wider hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-                        >
-                            Cancel
-                        </button>
-                    </>
-                ) : (
-                    /* Step 2: Enter OTP */
-                    <>
-                        <div className="rounded-2xl p-4 bg-emerald-50 dark:bg-emerald-500/5 border border-emerald-200 dark:border-emerald-500/20 mb-5">
-                            <div className="flex items-start gap-3">
-                                <KeyRound size={16} className="text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
-                                <div>
-                                    <p className="text-xs text-slate-600 dark:text-white/70 leading-relaxed">
-                                        A {CODE_LENGTH}-digit verification code has been sent to <strong>{maskedRecipient()}</strong>
-                                    </p>
-                                    <p className="text-[10px] text-slate-400 dark:text-white/40 mt-1">
-                                        {method === 'sms' ? 'Check your SMS messages' : 'Check your email inbox (and spam)'}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="mb-4">
-                            <label className="text-[9px] text-slate-400 dark:text-white/40 font-bold uppercase tracking-wider mb-2 block text-center">
-                                Enter Verification Code
-                            </label>
+                        <div className="mb-6">
                             <input
-                                ref={otpInputRef}
-                                type="text"
+                                ref={pinInputRef}
+                                type="password"
                                 inputMode="numeric"
-                                value={otpInput}
-                                onChange={(e) => { setOtpInput(e.target.value.replace(/[^0-9]/g, '').slice(0, CODE_LENGTH)); setError(''); }}
-                                onKeyDown={handleOtpKeyDown}
-                                placeholder="• • • • • •"
-                                className="w-full h-16 bg-transparent neo-inset rounded-2xl px-4 outline-none focus:ring-2 ring-emerald-500/50 transition-all text-2xl placeholder:text-slate-300 dark:placeholder:text-white/20 font-black text-slate-900 dark:text-white tracking-[0.5em] text-center"
-                                maxLength={CODE_LENGTH}
-                                autoComplete="one-time-code"
+                                value={pinInput}
+                                onChange={(e) => { setPinInput(e.target.value.replace(/[^0-9]/g, '').slice(0, PIN_LENGTH)); setError(''); }}
+                                onKeyDown={(e) => e.key === 'Enter' && pinInput.length === PIN_LENGTH && handleVerifyPin()}
+                                placeholder="• • • •"
+                                className="w-full h-16 bg-slate-50 dark:bg-white/5 rounded-2xl text-center text-3xl font-black tracking-[1em] outline-none focus:ring-2 ring-indigo-500/50"
+                                maxLength={PIN_LENGTH}
                             />
                         </div>
-
-                        {error && (
-                            <div className="flex items-center gap-2 mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20">
-                                <AlertTriangle size={14} className="text-rose-500 flex-shrink-0" />
-                                <p className="text-xs text-rose-600 dark:text-rose-400 font-bold">{error}</p>
-                            </div>
-                        )}
-
+                        {error && <p className="text-xs text-rose-500 font-bold text-center mb-4">{error}</p>}
                         <button
-                            onClick={handleVerifyOtp}
-                            disabled={otpInput.length !== CODE_LENGTH || isLoading}
-                            className={`w-full py-4 font-black rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] text-sm ${otpInput.length === CODE_LENGTH && !isLoading
-                                ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white'
-                                : 'bg-slate-100 dark:bg-white/5 text-slate-300 dark:text-white/20 cursor-not-allowed shadow-none'
-                                }`}
+                            onClick={handleVerifyPin}
+                            disabled={pinInput.length !== PIN_LENGTH || isLoading}
+                            className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl mb-4 transition-colors disabled:opacity-50"
                         >
-                            {isLoading ? (
-                                <><RefreshCw size={16} className="animate-spin" /> Verifying...</>
-                            ) : (
-                                <><CheckCircle2 size={16} /> Verify & Open Portal</>
-                            )}
+                            {isLoading ? 'Verifying...' : 'Unlock Portal'}
                         </button>
+                        <button onClick={() => { setStep('input'); setPinInput(''); }} className="w-full text-xs text-slate-400 font-bold hover:text-indigo-500">
+                            Forgot PIN? verify via OTP
+                        </button>
+                    </>
+                )}
 
-                        {/* Resend & Back */}
-                        <div className="flex items-center justify-between mt-4">
-                            <button
-                                onClick={() => { setStep('input'); setOtpInput(''); setError(''); }}
-                                className="text-xs text-slate-400 dark:text-white/40 font-bold hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-                            >
-                                ← Change {method === 'sms' ? 'number' : 'email'}
-                            </button>
-                            <button
-                                onClick={handleResendOtp}
-                                disabled={resendCooldown > 0 || isLoading}
-                                className={`text-xs font-bold transition-colors ${resendCooldown > 0
-                                    ? 'text-slate-300 dark:text-white/20 cursor-not-allowed'
-                                    : 'text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300'
-                                    }`}
-                            >
-                                {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Code'}
-                            </button>
+                {step === 'input' && (
+                    <>
+                        <div className="flex gap-2 mb-5 p-1 bg-slate-100 dark:bg-white/5 rounded-2xl">
+                            <button onClick={() => setMethod('sms')} className={`flex-1 py-2 rounded-xl text-xs font-bold ${method === 'sms' ? 'bg-white shadow text-indigo-600' : 'text-slate-400'}`}>SMS</button>
+                            <button onClick={() => setMethod('email')} className={`flex-1 py-2 rounded-xl text-xs font-bold ${method === 'email' ? 'bg-white shadow text-indigo-600' : 'text-slate-400'}`}>Email</button>
                         </div>
+                        <div className="mb-4">
+                            <input
+                                ref={method === 'sms' ? phoneInputRef : emailInputRef}
+                                type={method === 'sms' ? 'tel' : 'email'}
+                                value={method === 'sms' ? phoneInput : emailInput}
+                                onChange={(e) => method === 'sms' ? setPhoneInput(e.target.value) : setEmailInput(e.target.value)}
+                                placeholder={method === 'sms' ? "Phone Number" : "Email Address"}
+                                className="w-full h-14 bg-slate-50 dark:bg-white/5 rounded-2xl px-4 font-bold outline-none focus:ring-2 ring-indigo-500/50"
+                            />
+                        </div>
+                        {error && <p className="text-xs text-rose-500 font-bold mb-4">{error}</p>}
+                        <button onClick={handleSendOtp} disabled={!isInputValid() || isLoading} className="w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl">
+                            {isLoading ? 'Sending...' : 'Send Code'}
+                        </button>
+                    </>
+                )}
 
+                {step === 'otp' && (
+                    <>
+                        <p className="text-xs text-center text-slate-500 mb-4">Code sent to {maskedRecipient()}</p>
+                        <input
+                            ref={otpInputRef}
+                            value={otpInput}
+                            onChange={(e) => setOtpInput(e.target.value.slice(0, CODE_LENGTH))}
+                            className="w-full h-16 bg-slate-50 dark:bg-white/5 rounded-2xl text-center text-2xl font-black tracking-[0.5em] mb-4 outline-none focus:ring-2 ring-emerald-500"
+                            placeholder="• • • • • •"
+                        />
+                        {error && <p className="text-xs text-rose-500 font-bold text-center mb-4">{error}</p>}
+                        <button onClick={handleVerifyOtp} disabled={otpInput.length !== CODE_LENGTH || isLoading} className="w-full py-4 bg-emerald-600 text-white font-bold rounded-2xl">
+                            {isLoading ? 'Verifying...' : 'Verify'}
+                        </button>
+                    </>
+                )}
+
+                {step === 'pin-setup' && (
+                    <>
+                        <div className="text-center mb-6">
+                            <h2 className="text-lg font-black text-slate-900 dark:text-white mb-2">Set Quick Access PIN</h2>
+                            <p className="text-xs text-slate-500 dark:text-white/60">Set a 4-digit PIN for faster access next time</p>
+                        </div>
+                        <div className="space-y-4 mb-6">
+                            <input
+                                ref={pinInputRef}
+                                type="number"
+                                value={pinInput}
+                                onChange={(e) => setPinInput(e.target.value.slice(0, PIN_LENGTH))}
+                                placeholder="New PIN"
+                                className="w-full h-14 bg-slate-50 dark:bg-white/5 rounded-2xl text-center text-xl font-bold tracking-widest outline-none focus:ring-2 ring-indigo-500/50"
+                            />
+                            <input
+                                type="number"
+                                value={confirmPinInput}
+                                onChange={(e) => setConfirmPinInput(e.target.value.slice(0, PIN_LENGTH))}
+                                placeholder="Confirm PIN"
+                                className="w-full h-14 bg-slate-50 dark:bg-white/5 rounded-2xl text-center text-xl font-bold tracking-widest outline-none focus:ring-2 ring-indigo-500/50"
+                            />
+                        </div>
+                        {error && <p className="text-xs text-rose-500 font-bold text-center mb-4">{error}</p>}
                         <button
-                            onClick={onCancel}
-                            className="w-full mt-3 py-3 text-slate-400 dark:text-white/40 font-bold text-xs uppercase tracking-wider hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                            onClick={handleSetPin}
+                            disabled={pinInput.length !== PIN_LENGTH || pinInput !== confirmPinInput || isLoading}
+                            className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl transition-colors disabled:opacity-50"
                         >
-                            Cancel
+                            {isLoading ? 'Saving...' : 'Set PIN & Enter'}
                         </button>
                     </>
                 )}
